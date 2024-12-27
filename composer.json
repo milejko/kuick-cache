@@ -1,0 +1,47 @@
+{
+    "name": "kuick/cache",
+    "type": "library",
+    "description": "Kuick Cache is a slim PSR-16 Simple Cache Interface implementation, supporting popular backends including Redis, ApcU and FileSystem",
+    "keywords": ["psr-16", "cache", "simple cache", "kuick"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mariusz Miłejko",
+            "email": "mariusz@milejko.pl"
+        }
+    ],
+    "require": {
+        "php": ">=8.2.0",
+        "ext-date": "*",
+        "ext-spl": "*",
+        "kuick/redis": "^1.0",
+        "psr/simple-cache": "^3.0",
+        "nyholm/dsn": "^2.0"
+    },
+    "scripts": {
+        "fix:phpcbf": "phpcbf --standard=PSR12 src tests",
+        "test:phpstan": "XDEBUG_MODE=off phpstan --level=5 --no-progress --memory-limit=512M analyse src tests",
+        "test:phpcs": "phpcs -n --standard=PSR12 ./src ./tests",
+        "test:phpmd": "phpmd src tests text cleancode,codesize,controversial,design,naming,unusedcode",
+        "test:phpunit": "XDEBUG_MODE=coverage phpunit",
+        "test:all": [
+            "@test:phpcs",
+            "@test:phpstan",
+            "@test:phpmd",
+            "@test:phpunit"
+        ]
+    },
+    "autoload": {
+        "psr-4": {
+            "Kuick\\Cache\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Kuick\\Tests\\Cache\\": "tests"
+        }
+    },
+    "require-dev": {
+        "kuick/qa-toolkit": "^1.0"
+    }
+}

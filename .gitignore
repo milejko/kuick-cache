@@ -1,0 +1,6 @@
+composer.lock
+/.idea
+/.php*
+/vendor/
+.DS_Store
+/.env.local

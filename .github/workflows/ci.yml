@@ -1,0 +1,26 @@
+name: "CI"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - '**'
+
+jobs:
+
+  Testing:
+    name: "PHP Checks"
+    strategy:
+      matrix:
+        php-version: ['8.2', '8.3', '8.4']
+      fail-fast: true
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Run tests
+      run: make test
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
