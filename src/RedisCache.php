@@ -17,7 +17,7 @@ use Redis;
 
 class RedisCache implements CacheInterface
 {
-    private const REDIS_INFINITE_TTL = -1;
+    private const TEMP_INFINITE_TTL = 31536000; //1 year
 
     public function __construct(private Redis|RedisInterface $redis)
     {
@@ -40,9 +40,9 @@ class RedisCache implements CacheInterface
     public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
     {
         $ttlSeconds = ($ttl instanceof DateInterval) ? $ttl->s : $ttl;
-        //override infinite time for Redis
-        if (null === $ttlSeconds || 0 === $ttlSeconds) {
-            $ttlSeconds = self::REDIS_INFINITE_TTL;
+        //persist item
+        if (!$ttlSeconds) {
+            return $this->redis->set($key, serialize($value), self::TEMP_INFINITE_TTL) && $this->redis->persist($key);
         }
         return $this->redis->set($key, serialize($value), $ttlSeconds);
     }
