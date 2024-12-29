@@ -11,13 +11,14 @@
 namespace Kuick\Cache;
 
 use DateInterval;
-use Kuick\Cache\Utils\CacheValueSerializer;
 use Kuick\Redis\RedisInterface;
 use Psr\SimpleCache\CacheInterface;
 use Redis;
 
 class RedisCache implements CacheInterface
 {
+    private const REDIS_INFINITE_TTL = -1;
+
     public function __construct(private Redis|RedisInterface $redis)
     {
     }
@@ -30,7 +31,7 @@ class RedisCache implements CacheInterface
         if (!$this->has($key)) {
             return $default;
         }
-        return (new CacheValueSerializer())->unserialize($this->redis->get($key));
+        return unserialize($this->redis->get($key));
     }
 
     /**
@@ -39,7 +40,11 @@ class RedisCache implements CacheInterface
     public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
     {
         $ttlSeconds = ($ttl instanceof DateInterval) ? $ttl->s : $ttl;
-        return $this->redis->set($key, (new CacheValueSerializer())->serialize($value, $ttlSeconds ?? 0), $ttlSeconds ?? 0);
+        //override infinite time for Redis
+        if (null === $ttlSeconds || 0 === $ttlSeconds) {
+            $ttlSeconds = self::REDIS_INFINITE_TTL;
+        }
+        return $this->redis->set($key, serialize($value), $ttlSeconds);
     }
 
     /**
