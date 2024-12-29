@@ -53,7 +53,7 @@ class ApcuCacheTest extends TestCase
         $cache = new ApcuCache();
         $cache->set('foo', 'bar', 1);
         assertEquals('bar', $cache->get('foo'));
-        sleep(1);
+        sleep(2);
         assertNull($cache->get('foo'));
     }
 

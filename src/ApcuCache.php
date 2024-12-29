@@ -11,7 +11,6 @@
 namespace Kuick\Cache;
 
 use DateInterval;
-use Kuick\Cache\Utils\CacheValueSerializer;
 use Psr\SimpleCache\CacheInterface;
 
 class ApcuCache implements CacheInterface
@@ -29,7 +28,7 @@ class ApcuCache implements CacheInterface
         if (!$this->has($key)) {
             return $default;
         }
-        return (new CacheValueSerializer())->unserialize(apcu_fetch($key));
+        return unserialize(apcu_fetch($key));
     }
 
     /**
@@ -38,7 +37,7 @@ class ApcuCache implements CacheInterface
     public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
     {
         $ttlSeconds = ($ttl instanceof DateInterval) ? $ttl->s : $ttl;
-        return apcu_store($key, (new CacheValueSerializer())->serialize($value, $ttlSeconds ?? 0), $ttlSeconds ?? 0);
+        return apcu_store($key, serialize($value), $ttlSeconds ?? 0);
     }
 
     /**
