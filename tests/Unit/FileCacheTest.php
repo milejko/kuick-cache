@@ -28,6 +28,12 @@ class FileCacheTest extends TestCase
         $fs->remove(self::$cacheDir);
     }
 
+    public static function tearDownAfterClass(): void
+    {
+        $fs = new Filesystem();
+        $fs->remove(dirname(__DIR__) . '/../Mocks');
+    }
+
     public function testIfCacheCanBeSetAndGet(): void
     {
         $cache = new FileCache(self::$cacheDir);
