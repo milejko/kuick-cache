@@ -15,11 +15,13 @@
     },
     "require": {
         "php": ">=8.2.0",
-        "ext-date": "*",
-        "ext-spl": "*",
-        "kuick/redis": "^1.0",
         "psr/simple-cache": "^3.0",
         "nyholm/dsn": "^2.0"
+    },
+    "suggest": {
+        "ext-apcu": "Required to use the APCu cache driver.",
+        "ext-redis": "Required to use the Redis cache driver.",
+        "kuick/redis": "Required to use the Redis cache driver (^1.0)."
     },
     "scripts": {
         "fix:phpcbf": "phpcbf --standard=PSR12 src tests",
