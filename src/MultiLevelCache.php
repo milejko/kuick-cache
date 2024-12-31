@@ -13,29 +13,45 @@ namespace Kuick\Cache;
 use DateInterval;
 use Psr\SimpleCache\CacheInterface;
 
-class ArrayCache implements CacheInterface
+class MultiLevelCache implements CacheInterface
 {
     /**
-     * @var array<string, string>
+     * @param array<CacheInterface> $orderedBackends
      */
-    private array $store = [];
-
-    public function get(string $key, mixed $default = null): mixed
+    public function __construct(private array $orderedBackends)
     {
-        if (!isset($this->store[$key])) {
-            return $default;
-        }
-        return (new Serializer())->unserialize($this->store[$key]) ?? $default;
-    }
-
-    public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
-    {
-        $ttlSeconds = ($ttl instanceof DateInterval) ? $ttl->s : $ttl;
-        $this->store[$key] = (new Serializer())->serialize($value, $ttlSeconds);
-        return true;
     }
 
     /**
+     * @throws InvalidArgumentException
+     */
+    public function get(string $key, mixed $default = null): mixed
+    {
+        foreach ($this->orderedBackends as $backend) {
+            $value = $backend->get($key, $default);
+            if (null !== $value) {
+                return $value;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     * @throws CacheException
+     */
+    public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
+    {
+        $result = true;
+        foreach ($this->orderedBackends as $backend) {
+            $result = $result && $backend->set($key, $value, $ttl);
+        }
+        return $result;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     * @throws CacheException
      * @param array<string, string> $values
      */
     public function setMultiple(iterable $values, null|int|DateInterval $ttl = null): bool
@@ -47,17 +63,31 @@ class ArrayCache implements CacheInterface
         return $result;
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function has(string $key): bool
     {
         return null !== $this->get($key);
     }
 
+    /**
+     * @throws InvalidArgumentException
+     * @throws CacheException
+     */
     public function delete(string $key): bool
     {
-        unset($this->store[$key]);
-        return true;
+        $result = true;
+        foreach ($this->orderedBackends as $backend) {
+            $result = $result && $backend->delete($key);
+        }
+        return $result;
     }
 
+    /**
+     * @throws InvalidArgumentException
+     * @throws CacheException
+     */
     public function deleteMultiple(iterable $keys): bool
     {
         $result = true;
@@ -67,6 +97,10 @@ class ArrayCache implements CacheInterface
         return $result;
     }
 
+    /**
+     * @throws InvalidArgumentException
+     * @throws CacheException
+     */
     public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
         $values = [];
@@ -78,7 +112,10 @@ class ArrayCache implements CacheInterface
 
     public function clear(): bool
     {
-        $this->store = [];
-        return true;
+        $result = true;
+        foreach ($this->orderedBackends as $backend) {
+            $result = $result && $backend->clear();
+        }
+        return $result;
     }
 }

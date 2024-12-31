@@ -8,13 +8,8 @@
  * @license   https://en.wikipedia.org/wiki/BSD_licenses New BSD License
  */
 
-namespace Kuick\Cache\Utils;
+namespace Kuick\Cache;
 
-use Kuick\Cache\ApcuCache;
-use Kuick\Cache\ArrayCache;
-use Kuick\Cache\FileCache;
-use Kuick\Cache\InvalidArgumentException;
-use Kuick\Cache\RedisCache;
 use Kuick\Redis\RedisClientFactory;
 use Nyholm\Dsn\DsnParser;
 use Psr\SimpleCache\CacheInterface;
@@ -34,6 +29,8 @@ class CacheFactory
             case 'apcu':
                 return new ApcuCache();
             case 'file':
+                null === $dsn->getPath() &&
+                throw new InvalidArgumentException('File cache path not set');
                 return new FileCache($dsn->getPath());
             case 'redis':
                 $redisClient = (new RedisClientFactory())($dsnString);

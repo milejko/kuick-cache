@@ -4,7 +4,7 @@ namespace Tests\Kuick\Cache;
 
 use Kuick\Cache\ArrayCache;
 use PHPUnit\Framework\TestCase;
-use Tests\Kuick\Mocks\RedisMock;
+use stdClass;
 
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertFalse;
@@ -24,6 +24,8 @@ class ArrayCacheTest extends TestCase
         assertTrue($cache->set('/my/key', 'test-value'));
         assertTrue($cache->has('/my/key'));
         assertEquals('test-value', $cache->get('/my/key'));
+        $cache->set('foo', new stdClass());
+        assertEquals(new stdClass(), $cache->get('foo'));
     }
 
     public function testIfCacheCanBeOverwritten(): void

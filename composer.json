@@ -15,17 +15,17 @@
     },
     "require": {
         "php": ">=8.2.0",
+        "kuick/redis": "^1.0",
         "psr/simple-cache": "^3.0",
         "nyholm/dsn": "^2.0"
     },
     "suggest": {
         "ext-apcu": "Required to use the APCu cache driver.",
-        "ext-redis": "Required to use the Redis cache driver.",
-        "kuick/redis": "Required to use the Redis cache driver (^1.0)."
+        "ext-redis": "Required to use the Redis cache driver."
     },
     "scripts": {
         "fix:phpcbf": "phpcbf --standard=PSR12 src tests",
-        "test:phpstan": "XDEBUG_MODE=off phpstan --level=5 --no-progress --memory-limit=512M analyse src tests",
+        "test:phpstan": "XDEBUG_MODE=off phpstan --level=9 --no-progress --memory-limit=512M analyse src tests",
         "test:phpcs": "phpcs -n --standard=PSR12 ./src ./tests",
         "test:phpmd": "phpmd src tests text cleancode,codesize,controversial,design,naming,unusedcode",
         "test:phpunit": "XDEBUG_MODE=coverage phpunit",
@@ -43,11 +43,10 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Kuick\\Tests\\Cache\\": "tests"
+            "Tests\\Kuick\\Cache\\": "tests"
         }
     },
     "require-dev": {
-        "kuick/qa-toolkit": "^1.0",
-        "kuick/redis": "^1.0"
+        "kuick/qa-toolkit": "^1.0"
     }
 }

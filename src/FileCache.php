@@ -13,7 +13,6 @@ namespace Kuick\Cache;
 use DateInterval;
 use FilesystemIterator;
 use GlobIterator;
-use Kuick\Cache\Utils\CacheValueSerializer;
 use Psr\SimpleCache\CacheInterface;
 
 class FileCache implements CacheInterface
@@ -40,7 +39,8 @@ class FileCache implements CacheInterface
         if (!file_exists($cacheFilePath)) {
             return $default;
         }
-        $contents = (new CacheValueSerializer())->unserialize(file_get_contents($cacheFilePath));
+        $fileContents = file_get_contents($cacheFilePath);
+        $contents = (new Serializer())->unserialize(false === $fileContents ? '' : $fileContents);
         //value non existent or expired
         if (null === $contents) {
             return $default;
@@ -55,13 +55,14 @@ class FileCache implements CacheInterface
     public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
     {
         $cacheFilePath = $this->calculateFilePath($key);
-        file_put_contents($cacheFilePath, (new CacheValueSerializer())->serialize($value, $ttl));
+        file_put_contents($cacheFilePath, (new Serializer())->serialize($value, $ttl));
         return true;
     }
 
     /**
      * @throws InvalidArgumentException
      * @throws CacheException
+     * @param array<string, string> $values
      */
     public function setMultiple(iterable $values, null|int|DateInterval $ttl = null): bool
     {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Kuick\Cache\Utils;
+namespace Tests\Kuick\Cache;
 
 use DateInterval;
-use Kuick\Cache\Utils\CacheValueSerializer;
+use Kuick\Cache\Serializer;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -11,9 +11,9 @@ use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNull;
 
 /**
- * @covers \Kuick\Cache\Utils\CacheValueSerializer
+ * @covers \Kuick\Cache\Serializer
  */
-class CacheValueSerializerTest extends TestCase
+class SerializerTest extends TestCase
 {
     private static string $cacheDir;
 
@@ -26,7 +26,7 @@ class CacheValueSerializerTest extends TestCase
 
     public function testIfSerializationWorksBothWays(): void
     {
-        $cvs = new CacheValueSerializer();
+        $cvs = new Serializer();
         $serializedValue = $cvs->serialize('test', new DateInterval('PT3600S'));
         assertEquals('test', $cvs->unserialize($serializedValue));
         $anotherSerializedVal = $cvs->serialize('another');
@@ -35,7 +35,7 @@ class CacheValueSerializerTest extends TestCase
 
     public function testIfExpiredValueReturnsNull(): void
     {
-        $cvs = new CacheValueSerializer();
+        $cvs = new Serializer();
         $serializedValue = $cvs->serialize('test', 1);
         sleep(1);
         assertNull($cvs->unserialize($serializedValue));

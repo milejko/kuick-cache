@@ -4,6 +4,7 @@ namespace Tests\Kuick\Cache;
 
 use Kuick\Cache\ApcuCache;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertFalse;
@@ -28,6 +29,8 @@ class ApcuCacheTest extends TestCase
         assertTrue($cache->set('/my/key', 'test-value'));
         assertTrue($cache->has('/my/key'));
         assertEquals('test-value', $cache->get('/my/key'));
+        $cache->set('foo', new stdClass());
+        assertEquals(new stdClass(), $cache->get('foo'));
     }
 
     public function testIfCacheCanBeOverwritten(): void
@@ -88,5 +91,12 @@ class ApcuCacheTest extends TestCase
         assertFalse($cache->has('foo'));
         assertFalse($cache->has('first'));
         assertFalse($cache->has('baz'));
+    }
+
+    public function testIfMessedUpCacheReturnsNull(): void
+    {
+        $cache = new ApcuCache();
+        apcu_store('foo', new stdClass());
+        assertNull($cache->get('foo'));
     }
 }

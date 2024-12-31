@@ -6,6 +6,7 @@ use Kuick\Cache\CacheException;
 use Kuick\Cache\FileCache;
 use Kuick\Cache\InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Symfony\Component\Filesystem\Filesystem;
 
 use function PHPUnit\Framework\assertEquals;
@@ -42,6 +43,8 @@ class FileCacheTest extends TestCase
         assertTrue($cache->set('/my/key', 'test-value'));
         assertTrue($cache->has('/my/key'));
         assertEquals('test-value', $cache->get('/my/key'));
+        $cache->set('foo', new stdClass());
+        assertEquals(new stdClass(), $cache->get('foo'));
     }
 
     public function testIfCacheCanBeOverwritten(): void

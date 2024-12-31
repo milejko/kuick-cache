@@ -1,19 +1,19 @@
 <?php
 
-namespace Tests\Kuick\Cache\Utils;
+namespace Tests\Kuick\Cache;
 
 use Kuick\Cache\ApcuCache;
 use Kuick\Cache\ArrayCache;
 use Kuick\Cache\FileCache;
 use Kuick\Cache\InvalidArgumentException;
 use Kuick\Cache\RedisCache;
-use Kuick\Cache\Utils\CacheFactory;
+use Kuick\Cache\CacheFactory;
 use PHPUnit\Framework\TestCase;
 
 use function PHPUnit\Framework\assertInstanceOf;
 
 /**
- * @covers \Kuick\Cache\Utils\CacheFactory
+ * @covers \Kuick\Cache\CacheFactory
  */
 class CacheFactoryTest extends TestCase
 {

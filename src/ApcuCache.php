@@ -28,7 +28,11 @@ class ApcuCache implements CacheInterface
         if (!$this->has($key)) {
             return $default;
         }
-        return unserialize(apcu_fetch($key));
+        $rawData = apcu_fetch($key);
+        if (!is_string($rawData)) {
+            return $default;
+        }
+        return unserialize($rawData);
     }
 
     /**
@@ -42,6 +46,7 @@ class ApcuCache implements CacheInterface
 
     /**
      * @throws CacheException
+     * @param array<string, string> $values
      */
     public function setMultiple(iterable $values, null|int|DateInterval $ttl = null): bool
     {

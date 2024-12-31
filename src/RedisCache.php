@@ -31,7 +31,11 @@ class RedisCache implements CacheInterface
         if (!$this->has($key)) {
             return $default;
         }
-        return unserialize($this->redis->get($key));
+        $rawData = $this->redis->get($key);
+        if (!is_string($rawData)) {
+            return $default;
+        }
+        return unserialize($rawData);
     }
 
     /**
@@ -49,6 +53,7 @@ class RedisCache implements CacheInterface
 
     /**
      * @throws CacheException
+     * @param array<string, string> $values
      */
     public function setMultiple(iterable $values, null|int|DateInterval $ttl = null): bool
     {

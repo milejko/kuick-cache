@@ -5,6 +5,7 @@ namespace Tests\Kuick\Cache;
 use Kuick\Cache\RedisCache;
 use PHPUnit\Framework\TestCase;
 use Kuick\Redis\RedisMock;
+use stdClass;
 
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertFalse;
@@ -24,6 +25,8 @@ class RedisCacheTest extends TestCase
         assertTrue($cache->set('/my/key', 'test-value'));
         assertTrue($cache->has('/my/key'));
         assertEquals('test-value', $cache->get('/my/key'));
+        $cache->set('foo', new stdClass());
+        assertEquals(new stdClass(), $cache->get('foo'));
     }
 
     public function testIfCacheCanBeOverwritten(): void
@@ -84,5 +87,11 @@ class RedisCacheTest extends TestCase
         assertFalse($cache->has('foo'));
         assertFalse($cache->has('first'));
         assertFalse($cache->has('baz'));
+    }
+    public function testIfMessedUpCacheReturnsNull(): void
+    {
+        $cache = new RedisCache($redisMock = new RedisMock());
+        $redisMock->set('foo', null);
+        assertNull($cache->get('foo'));
     }
 }
