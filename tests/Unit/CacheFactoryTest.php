@@ -3,11 +3,11 @@
 namespace Tests\Kuick\Cache;
 
 use Kuick\Cache\ApcuCache;
-use Kuick\Cache\ArrayCache;
-use Kuick\Cache\FileCache;
 use Kuick\Cache\InvalidArgumentException;
 use Kuick\Cache\RedisCache;
 use Kuick\Cache\CacheFactory;
+use Kuick\Cache\FilesystemCache;
+use Kuick\Cache\InMemoryCache;
 use PHPUnit\Framework\TestCase;
 
 use function PHPUnit\Framework\assertInstanceOf;
@@ -32,7 +32,7 @@ class CacheFactoryTest extends TestCase
     public function testIfFileCacheIsCreated(): void
     {
         $cache = (new CacheFactory())('file:///tmp');
-        assertInstanceOf(FileCache::class, $cache);
+        assertInstanceOf(FilesystemCache::class, $cache);
     }
 
     public function testIfRedisCacheIsCreated(): void
@@ -41,10 +41,10 @@ class CacheFactoryTest extends TestCase
         assertInstanceOf(RedisCache::class, $cache);
     }
 
-    public function testIfArrayCacheIsCreated(): void
+    public function testIfInMemoryCacheIsCreated(): void
     {
         $cache = (new CacheFactory())('array://');
-        assertInstanceOf(ArrayCache::class, $cache);
+        assertInstanceOf(InMemoryCache::class, $cache);
     }
 
     public function testIfApcuCacheIsCreated(): void

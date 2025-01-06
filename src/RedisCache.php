@@ -11,65 +11,80 @@
 namespace Kuick\Cache;
 
 use DateInterval;
+use Kuick\Cache\Serializers\SafeSerializer;
+use Kuick\Cache\Serializers\SerializerInterface;
 use Kuick\Redis\RedisInterface;
 use Psr\SimpleCache\CacheInterface;
 use Redis;
+use RedisException;
 
-class RedisCache implements CacheInterface
+class RedisCache extends AbstractCache implements CacheInterface
 {
-    private const TEMP_INFINITE_TTL = 31536000; //1 year
+    private const INFINITE_TTL = 315360000; //10 years
 
-    public function __construct(private Redis|RedisInterface $redis)
-    {
+    public function __construct(
+        private Redis|RedisInterface $redis,
+        private SerializerInterface $serializer = new SafeSerializer(),
+    ) {
     }
 
     /**
+     * @throws InvalidArgumentException
      * @throws CacheException
      */
     public function get(string $key, mixed $default = null): mixed
     {
-        if (!$this->has($key)) {
+        $this->validateKey($key);
+        try {
+            $rawData = $this->redis->get($this->sanitizeKey($key));
+        } catch (RedisException) {
+            throw new CacheException('Redis backend failed during get()');
+        }
+        if (false === $rawData || null === $rawData) {
             return $default;
         }
-        $rawData = $this->redis->get($key);
         if (!is_string($rawData)) {
-            return $default;
+            throw new CacheException('Redis backend failed, expected string, got ' . gettype($rawData));
         }
-        return unserialize($rawData);
+        return $this->serializer->unserialize($rawData);
     }
 
     /**
+     * @throws InvalidArgumentException
      * @throws CacheException
      */
     public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
     {
-        $ttlSeconds = ($ttl instanceof DateInterval) ? $ttl->s : $ttl;
-        //persist item
-        if (!$ttlSeconds) {
-            return $this->redis->set($key, serialize($value), self::TEMP_INFINITE_TTL) && $this->redis->persist($key);
+        $this->validateKey($key);
+        $sanitizedKey = $this->sanitizeKey($key);
+        $ttlSeconds = $this->ttlToInt($ttl);
+        try {
+            $this->redis->set($sanitizedKey, $this->serializer->serialize($value), $ttlSeconds ? $ttlSeconds : self::INFINITE_TTL);
+            //persist item
+            if (!$ttlSeconds) {
+                $this->redis->persist($sanitizedKey);
+            }
+        } catch (RedisException) {
+            throw new CacheException('Redis backend failed during set()');
         }
-        return $this->redis->set($key, serialize($value), $ttlSeconds);
+        return true;
     }
 
     /**
-     * @throws CacheException
-     * @param array<string, string> $values
-     */
-    public function setMultiple(iterable $values, null|int|DateInterval $ttl = null): bool
-    {
-        $result = true;
-        foreach ($values as $key => $value) {
-            $result = $result && $this->set($key, $value, $ttl);
-        }
-        return $result;
-    }
-
-    /**
+     * @throws InvalidArgumentException
      * @throws CacheException
      */
     public function has(string $key): bool
     {
-        return $this->redis->exists($key);
+        $this->validateKey($key);
+        try {
+            if (false === $this->redis->exists($this->sanitizeKey($key))) {
+                return false;
+            }
+        } catch (RedisException) {
+            throw new CacheException('Redis backend failed during has()');
+        }
+        return true;
     }
 
     /**
@@ -77,31 +92,13 @@ class RedisCache implements CacheInterface
      */
     public function delete(string $key): bool
     {
-        return $this->redis->del($key) !== false;
-    }
-
-    /**
-     * @throws CacheException
-     */
-    public function deleteMultiple(iterable $keys): bool
-    {
-        $result = true;
-        foreach ($keys as $key) {
-            $result = $result && $this->delete($key);
+        $this->validateKey($key);
+        try {
+            $this->redis->del($this->sanitizeKey($key));
+        } catch (RedisException) {
+            throw new CacheException('Redis backend failed during delete()');
         }
-        return $result;
-    }
-
-    /**
-     * @throws CacheException
-     */
-    public function getMultiple(iterable $keys, mixed $default = null): iterable
-    {
-        $values = [];
-        foreach ($keys as $key) {
-            $values[$key] = $this->get($key, $default);
-        }
-        return $values;
+        return true;
     }
 
     /**
@@ -109,6 +106,11 @@ class RedisCache implements CacheInterface
      */
     public function clear(): bool
     {
-        return $this->redis->flushDB(false);
+        try {
+            $this->redis->flushDB();
+        } catch (RedisException) {
+            throw new CacheException('Redis backend failed during clear()');
+        }
+        return true;
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Kuick\Cache;
 
 use Kuick\Cache\ApcuCache;
+use Kuick\Cache\CacheException;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -97,6 +98,7 @@ class ApcuCacheTest extends TestCase
     {
         $cache = new ApcuCache();
         apcu_store('foo', new stdClass());
-        assertNull($cache->get('foo'));
+        $this->expectException(CacheException::class);
+        $cache->get('foo');
     }
 }
