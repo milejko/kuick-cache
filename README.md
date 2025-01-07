@@ -16,7 +16,7 @@ Supporting popular backends such as:
 - Layered
 
 ## Usage
-### 1. Direct object creation:
+1. Direct object creation:
 ```
 <?php
 
