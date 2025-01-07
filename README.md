@@ -6,4 +6,41 @@
 [![codecov](https://codecov.io/gh/milejko/kuick-cache/graph/badge.svg?token=80QEBDHGPH)](https://codecov.io/gh/milejko/kuick-cache)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?cacheSeconds=14400)](LICENSE)
 
-PSR-16 simple cache implementation with popular backends including redis, apcu and file system
+## PSR-16 Simple Cache implementation
+Supporting popular backends such as:
+- File system
+- Redis
+- Database (Doctrine Dbal)
+- APCu
+- InMemory (aka ArrayCache)
+- Layered
+Supported serializers:
+- Standard PHP serializer
+- Gzdeflate supporting data compression
+- Json based serializer (fast, slim, and safe)
+
+## Usage
+1. Direct object creation:
+```
+<?php
+
+use Kuick\Cache\FilesystemCache;
+
+$fileCache = new FilesystemCache('/tmp/cache');
+$fileCache->set('foo', 'bar');
+echo $fileCache->get('foo'); // bar
+```
+2. Cache factory:
+Factory provides automatic cache object creation by a valid DSN
+```
+<?php
+
+use Kuick\Cache\CacheFactory;
+
+$cacheFactory = new CacheFactory();
+
+$dbCache    = $cacheFactory('pdo-mysql://127.0.0.1:3306/mydb'); // DbalCache instance
+$apcuCache  = $cacheFactory('apcu://'); // ApcuCache instance
+$fileCache  = $cacheFactory('file:///tmp/cache'); // FilesystemCache instance
+$redisCache = $cacheFactory('redis://redis-server.com:6379/2'); // RedisCache instance
+```
