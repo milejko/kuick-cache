@@ -92,3 +92,25 @@ $cache->deleteMultiple([
 // removes all the keys
 $cache->clear();
 ```
+4. Layered cache conception<br>
+If you are using cost intensive backend like Dbal, it can be beneficial to store cache data
+on multiple layers. Get methods will try the fastest backend possible.<br>
+PLEASE CONSIDER!<br>
+If not all backends are distributed, data inconsistency may occur, in example:
+We have 2 PHP containers serving content. We have 2 layers - one APCu, another Dbal.
+If one container changes Dbal data the other one may serve stale cache.
+```
+<?php
+
+use Kuick\Cache\CacheFactory;
+use Kuick\Cache\InMemoryCache;
+use Kuick\Cache\LayeredCache;
+
+$layeredCache = new LayeredCache([
+    new InMemoryCache(),                                // the fastest backend
+    new FilesystemCache('/tmp/cache'),                  // medium backend
+    (new CacheFactory())('pdo-mysql://remote:3306/db')  // slowest backend
+]);
+
+$layeredCache->get('foo');
+```
