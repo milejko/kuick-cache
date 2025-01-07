@@ -1,107 +1,60 @@
 <?php
 
 /**
- * Kuick Framework (https://github.com/milejko/kuick)
+ * Kuick Cache (https://github.com/milejko/kuick-cache)
  *
- * @link      https://github.com/milejko/kuick
- * @copyright Copyright (c) 2010-2024 Mariusz Miłejko (mariusz@milejko.pl)
+ * @link      https://github.com/milejko/kuick-cache
+ * @copyright Copyright (c) 2010-2025 Mariusz Miłejko (mariusz@milejko.pl)
  * @license   https://en.wikipedia.org/wiki/BSD_licenses New BSD License
  */
 
 namespace Kuick\Cache;
 
 use DateInterval;
+use Kuick\Cache\Serializers\SafeSerializer;
+use Kuick\Cache\Serializers\SerializerInterface;
 use Psr\SimpleCache\CacheInterface;
 
-class ApcuCache implements CacheInterface
+class ApcuCache extends AbstractCache implements CacheInterface
 {
-    public function __construct()
+    public function __construct(private SerializerInterface $serializer = new SafeSerializer())
     {
         function_exists('apcu_enabled') && apcu_enabled() || throw new CacheException('APCu is not enabled for ' . PHP_SAPI);
     }
 
-    /**
-     * @throws CacheException
-     */
     public function get(string $key, mixed $default = null): mixed
     {
-        if (!$this->has($key)) {
+        $this->validateKey($key);
+        $rawData = apcu_fetch($this->sanitizeKey($key));
+        if (false === $rawData) {
             return $default;
         }
-        $rawData = apcu_fetch($key);
         if (!is_string($rawData)) {
-            return $default;
+            throw new CacheException('Redis backend failed, expected string, got ' . gettype($rawData));
         }
-        return unserialize($rawData);
+        return $this->serializer->unserialize($rawData);
     }
 
-    /**
-     * @throws CacheException
-     */
     public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
     {
-        $ttlSeconds = ($ttl instanceof DateInterval) ? $ttl->s : $ttl;
-        return apcu_store($key, serialize($value), $ttlSeconds ?? 0);
+        $this->validateKey($key);
+        return (bool) apcu_store($this->sanitizeKey($key), $this->serializer->serialize($value), $this->ttlToInt($ttl));
     }
 
-    /**
-     * @throws CacheException
-     * @param array<string, string> $values
-     */
-    public function setMultiple(iterable $values, null|int|DateInterval $ttl = null): bool
-    {
-        $result = true;
-        foreach ($values as $key => $value) {
-            $result = $result && $this->set($key, $value, $ttl);
-        }
-        return $result;
-    }
-
-    /**
-     * @throws CacheException
-     */
     public function has(string $key): bool
     {
-        return apcu_exists($key);
+        $this->validateKey($key);
+        return apcu_exists($this->sanitizeKey($key));
     }
 
-    /**
-     * @throws CacheException
-     */
     public function delete(string $key): bool
     {
-        return apcu_delete($key) !== false;
+        $this->validateKey($key);
+        return (bool) apcu_delete($this->sanitizeKey($key));
     }
 
-    /**
-     * @throws CacheException
-     */
-    public function deleteMultiple(iterable $keys): bool
-    {
-        $result = true;
-        foreach ($keys as $key) {
-            $result = $result && $this->delete($key);
-        }
-        return $result;
-    }
-
-    /**
-     * @throws CacheException
-     */
-    public function getMultiple(iterable $keys, mixed $default = null): iterable
-    {
-        $values = [];
-        foreach ($keys as $key) {
-            $values[$key] = $this->get($key, $default);
-        }
-        return $values;
-    }
-
-    /**
-     * @throws CacheException
-     */
     public function clear(): bool
     {
-        return apcu_clear_cache();
+        return (bool) apcu_clear_cache();
     }
 }

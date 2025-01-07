@@ -1,13 +1,12 @@
 <?php
 
-namespace Tests\Kuick\Cache;
+namespace Tests\Unit\Kuick\Cache;
 
-use Kuick\Cache\CacheException;
-use Kuick\Cache\FileCache;
+use Doctrine\DBAL\DriverManager;
 use Kuick\Cache\InvalidArgumentException;
+use Kuick\Cache\DbalCache;
 use PHPUnit\Framework\TestCase;
 use stdClass;
-use Symfony\Component\Filesystem\Filesystem;
 
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertFalse;
@@ -15,29 +14,16 @@ use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 
 /**
- * @covers \Kuick\Cache\FileCache
- * @SuppressWarnings(PHPMD.ShortVariable)
+ * @covers \Kuick\Cache\DbalCache
  */
-class FileCacheTest extends TestCase
+class DbalCacheTest extends TestCase
 {
-    private static string $cacheDir;
-
-    public static function setUpBeforeClass(): void
-    {
-        self::$cacheDir = dirname(__DIR__) . '/../Mocks/MockProjectDir/var/cache/test-cache';
-        $fs = new Filesystem();
-        $fs->remove(self::$cacheDir);
-    }
-
-    public static function tearDownAfterClass(): void
-    {
-        $fs = new Filesystem();
-        $fs->remove(dirname(__DIR__) . '/../Mocks');
-    }
-
     public function testIfCacheCanBeSetAndGet(): void
     {
-        $cache = new FileCache(self::$cacheDir);
+        $dbal = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+        ]);
+        $cache = new DbalCache($dbal);
         assertNull($cache->get('inexistent-key'));
         assertFalse($cache->has('inexistent-key'));
         assertTrue($cache->set('/my/key', 'test-value'));
@@ -49,7 +35,10 @@ class FileCacheTest extends TestCase
 
     public function testIfCacheCanBeOverwritten(): void
     {
-        $cache = new FileCache(self::$cacheDir);
+        $dbal = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+        ]);
+        $cache = new DbalCache($dbal);
         assertTrue($cache->set('foo', 'bar'));
         assertEquals('bar', $cache->get('foo'));
         assertTrue($cache->set('foo', 'baz'));
@@ -58,7 +47,10 @@ class FileCacheTest extends TestCase
 
     public function testIfCacheCanBeDeleted(): void
     {
-        $cache = new FileCache(self::$cacheDir);
+        $dbal = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+        ]);
+        $cache = new DbalCache($dbal);
         assertTrue($cache->set('foo', 'bar'));
         assertEquals('bar', $cache->get('foo'));
         assertTrue($cache->delete('foo'));
@@ -67,7 +59,10 @@ class FileCacheTest extends TestCase
 
     public function testIfExpiredCacheReturnsNull(): void
     {
-        $cache = new FileCache(self::$cacheDir);
+        $dbal = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+        ]);
+        $cache = new DbalCache($dbal);
         $cache->set('foo', 'bar', 1);
         assertEquals('bar', $cache->get('foo'));
         sleep(1);
@@ -76,7 +71,10 @@ class FileCacheTest extends TestCase
 
     public function testMultipleSetsAndGetsDeletes(): void
     {
-        $cache = new FileCache(self::$cacheDir);
+        $dbal = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+        ]);
+        $cache = new DbalCache($dbal);
         $sourceArray = [
             'first' => 'first value',
             'second' => 'second value',
@@ -90,7 +88,10 @@ class FileCacheTest extends TestCase
 
     public function testClear(): void
     {
-        $cache = new FileCache(self::$cacheDir);
+        $dbal = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+        ]);
+        $cache = new DbalCache($dbal);
         $cache->set('first', 'first value');
         $cache->setMultiple(
             [
@@ -107,16 +108,12 @@ class FileCacheTest extends TestCase
         assertFalse($cache->has('baz'));
     }
 
-    public function testIfSetToInvalidDirectoryThrowsException(): void
-    {
-        file_put_contents(self::$cacheDir . '/not-a-dir', 'some content');
-        $this->expectException(CacheException::class);
-        new FileCache(self::$cacheDir . '/not-a-dir');
-    }
-
     public function testIfKeyToShortThrowsException(): void
     {
-        $cache = new FileCache(self::$cacheDir);
+        $dbal = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+        ]);
+        $cache = new DbalCache($dbal);
         //key to short
         $this->expectException(InvalidArgumentException::class);
         $cache->set('', 'bar');
@@ -124,8 +121,23 @@ class FileCacheTest extends TestCase
 
     public function testIfKeyTooLongThrowsException(): void
     {
-        $cache = new FileCache(self::$cacheDir);
+        $dbal = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+        ]);
+        $cache = new DbalCache($dbal);
         $this->expectException(InvalidArgumentException::class);
-        $cache->set('255+character-key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'bar');
+        $cache->set('512+character-key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'bar');
+    }
+
+    public function testIfOnceCreatedDbDoesntNeedToBeRecreated(): void
+    {
+        $dbal = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+            'path' => '/tmp/test.db',
+        ]);
+        $cache = new DbalCache($dbal);
+        $cache = new DbalCache($dbal);
+
+        assertTrue($cache->set('foo', 'bar'));
     }
 }

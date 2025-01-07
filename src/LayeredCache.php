@@ -13,7 +13,7 @@ namespace Kuick\Cache;
 use DateInterval;
 use Psr\SimpleCache\CacheInterface;
 
-class MultiLevelCache implements CacheInterface
+class LayeredCache extends AbstractCache implements CacheInterface
 {
     /**
      * @param array<CacheInterface> $orderedBackends
@@ -27,13 +27,22 @@ class MultiLevelCache implements CacheInterface
      */
     public function get(string $key, mixed $default = null): mixed
     {
+        $missedBackends = [];
         foreach ($this->orderedBackends as $backend) {
-            $value = $backend->get($key, $default);
-            if (null !== $value) {
-                return $value;
+            $value = $backend->get($key);
+            // cache miss
+            if (null === $value) {
+                $missedBackends[] = $backend;
+                continue;
             }
+            // cache the value in all backends that missed
+            foreach ($missedBackends as $missedBackend) {
+                $missedBackend->set($key, $value);
+            }
+            // return cache hit
+            return $value;
         }
-        return null;
+        return $default;
     }
 
     /**
@@ -51,24 +60,23 @@ class MultiLevelCache implements CacheInterface
 
     /**
      * @throws InvalidArgumentException
-     * @throws CacheException
-     * @param array<string, string> $values
-     */
-    public function setMultiple(iterable $values, null|int|DateInterval $ttl = null): bool
-    {
-        $result = true;
-        foreach ($values as $key => $value) {
-            $result = $result && $this->set($key, $value, $ttl);
-        }
-        return $result;
-    }
-
-    /**
-     * @throws InvalidArgumentException
      */
     public function has(string $key): bool
     {
-        return null !== $this->get($key);
+        $missedBackends = [];
+        foreach ($this->orderedBackends as $backend) {
+            // cache missed
+            if (false === $backend->has($key)) {
+                $missedBackends[] = $backend;
+                continue;
+            }
+            // cache the value in all backends that missed
+            foreach ($missedBackends as $missedBackend) {
+                $missedBackend->set($key, $backend->get($key));
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -82,32 +90,6 @@ class MultiLevelCache implements CacheInterface
             $result = $result && $backend->delete($key);
         }
         return $result;
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     * @throws CacheException
-     */
-    public function deleteMultiple(iterable $keys): bool
-    {
-        $result = true;
-        foreach ($keys as $key) {
-            $result = $result && $this->delete($key);
-        }
-        return $result;
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     * @throws CacheException
-     */
-    public function getMultiple(iterable $keys, mixed $default = null): iterable
-    {
-        $values = [];
-        foreach ($keys as $key) {
-            $values[$key] = $this->get($key, $default);
-        }
-        return $values;
     }
 
     public function clear(): bool

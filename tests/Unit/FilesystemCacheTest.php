@@ -2,12 +2,12 @@
 
 namespace Tests\Unit\Kuick\Cache;
 
-use Kuick\Cache\RedisCache;
+use Kuick\Cache\CacheException;
+use Kuick\Cache\FilesystemCache;
+use Kuick\Cache\InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Kuick\Redis\RedisMock;
-use Psr\SimpleCache\CacheException;
-use Redis;
 use stdClass;
+use Symfony\Component\Filesystem\Filesystem;
 
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertFalse;
@@ -15,13 +15,29 @@ use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 
 /**
- * @covers \Kuick\Cache\RedisCache
+ * @covers \Kuick\Cache\FilesystemCache
+ * @SuppressWarnings(PHPMD.ShortVariable)
  */
-class RedisCacheTest extends TestCase
+class FilesystemCacheTest extends TestCase
 {
+    private static string $cacheDir;
+
+    public static function setUpBeforeClass(): void
+    {
+        self::$cacheDir = dirname(__DIR__) . '/../Mocks/MockProjectDir/var/cache/test-cache';
+        $fs = new Filesystem();
+        $fs->remove(self::$cacheDir);
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        $fs = new Filesystem();
+        $fs->remove(dirname(__DIR__) . '/../Mocks');
+    }
+
     public function testIfCacheCanBeSetAndGet(): void
     {
-        $cache = new RedisCache(new RedisMock());
+        $cache = new FilesystemCache(self::$cacheDir);
         assertNull($cache->get('inexistent-key'));
         assertFalse($cache->has('inexistent-key'));
         assertTrue($cache->set('/my/key', 'test-value'));
@@ -33,7 +49,7 @@ class RedisCacheTest extends TestCase
 
     public function testIfCacheCanBeOverwritten(): void
     {
-        $cache = new RedisCache(new RedisMock());
+        $cache = new FilesystemCache(self::$cacheDir);
         assertTrue($cache->set('foo', 'bar'));
         assertEquals('bar', $cache->get('foo'));
         assertTrue($cache->set('foo', 'baz'));
@@ -42,7 +58,7 @@ class RedisCacheTest extends TestCase
 
     public function testIfCacheCanBeDeleted(): void
     {
-        $cache = new RedisCache(new RedisMock());
+        $cache = new FilesystemCache(self::$cacheDir);
         assertTrue($cache->set('foo', 'bar'));
         assertEquals('bar', $cache->get('foo'));
         assertTrue($cache->delete('foo'));
@@ -51,7 +67,7 @@ class RedisCacheTest extends TestCase
 
     public function testIfExpiredCacheReturnsNull(): void
     {
-        $cache = new RedisCache(new RedisMock());
+        $cache = new FilesystemCache(self::$cacheDir);
         $cache->set('foo', 'bar', 1);
         assertEquals('bar', $cache->get('foo'));
         sleep(1);
@@ -60,7 +76,7 @@ class RedisCacheTest extends TestCase
 
     public function testMultipleSetsAndGetsDeletes(): void
     {
-        $cache = new RedisCache(new RedisMock());
+        $cache = new FilesystemCache(self::$cacheDir);
         $sourceArray = [
             'first' => 'first value',
             'second' => 'second value',
@@ -74,7 +90,7 @@ class RedisCacheTest extends TestCase
 
     public function testClear(): void
     {
-        $cache = new RedisCache(new RedisMock());
+        $cache = new FilesystemCache(self::$cacheDir);
         $cache->set('first', 'first value');
         $cache->setMultiple(
             [
@@ -90,59 +106,34 @@ class RedisCacheTest extends TestCase
         assertFalse($cache->has('first'));
         assertFalse($cache->has('baz'));
     }
-    public function testIfMessedUpCacheReturnsNull(): void
-    {
-        $cache = new RedisCache($redisMock = new RedisMock());
-        $redisMock->set('foo', null);
-        assertNull($cache->get('foo'));
-    }
 
-    public function testRealRedisGetThrowsException(): void
+    public function testIfSetToInvalidDirectoryThrowsException(): void
     {
-        $cache = new RedisCache(new Redis());
-        //redis unavailable
+        file_put_contents(self::$cacheDir . '/not-a-dir', 'some content');
         $this->expectException(CacheException::class);
-        $cache->get('inexistent-key');
+        new FilesystemCache(self::$cacheDir . '/not-a-dir');
     }
 
-    public function testRealRedisSetThrowsException(): void
+    public function testIf(): void
     {
-        $cache = new RedisCache(new Redis());
-        //redis unavailable
+        file_put_contents(self::$cacheDir . '/not-a-dir', 'some content');
+        $this->expectException(CacheException::class);
+        new FilesystemCache(self::$cacheDir . '/not-a-dir');
+    }
+
+    public function testIfKeyTooLongThrowsException(): void
+    {
+        $cache = new FilesystemCache(self::$cacheDir);
+        $this->expectException(InvalidArgumentException::class);
+        $cache->set('512+character-key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'bar');
+    }
+
+    public function testIfSettingCacheToInexistentDirThrowsException(): void
+    {
+        $cache = new FilesystemCache(self::$cacheDir);
+        $fs = new Filesystem();
+        $fs->remove(self::$cacheDir);
         $this->expectException(CacheException::class);
         $cache->set('foo', 'bar');
-    }
-
-    public function testRealRedisHasThrowsException(): void
-    {
-        $cache = new RedisCache(new Redis());
-        //redis unavailable
-        $this->expectException(CacheException::class);
-        $cache->has('foo');
-    }
-
-    public function testRealRedisDeleteThrowsException(): void
-    {
-        $cache = new RedisCache(new Redis());
-        //redis unavailable
-        $this->expectException(CacheException::class);
-        $cache->delete('foo');
-    }
-
-    public function testRealRedisClearThrowsException(): void
-    {
-        $cache = new RedisCache(new Redis());
-        //redis unavailable
-        $this->expectException(CacheException::class);
-        $cache->clear();
-    }
-
-    public function testBrokenCacheValueValidation(): void
-    {
-        $redis = new RedisMock();
-        $redis->set('foo', new stdClass());
-        $cache = new RedisCache($redis);
-        $this->expectException(CacheException::class);
-        $cache->get('foo');
     }
 }

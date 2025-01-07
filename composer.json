@@ -16,18 +16,20 @@
     "require": {
         "php": ">=8.2.0",
         "kuick/redis": "^1.0",
+        "doctrine/dbal": "^3.1",
         "psr/simple-cache": "^3.0",
         "nyholm/dsn": "^2.0"
     },
     "suggest": {
         "ext-apcu": "Required to use the APCu cache driver.",
-        "ext-redis": "Required to use the Redis cache driver."
+        "ext-redis": "Required to use the Redis cache driver.",
+        "ext-pdo": "Required to use the Doctrine DBAL cache driver."
     },
     "scripts": {
         "fix:phpcbf": "phpcbf --standard=PSR12 src tests",
         "test:phpstan": "XDEBUG_MODE=off phpstan --level=9 --no-progress --memory-limit=512M analyse src tests",
         "test:phpcs": "phpcs -n --standard=PSR12 ./src ./tests",
-        "test:phpmd": "phpmd src tests text cleancode,codesize,controversial,design,naming,unusedcode",
+        "test:phpmd": "phpmd src text cleancode,codesize,controversial,design,naming,unusedcode",
         "test:phpunit": "XDEBUG_MODE=coverage phpunit",
         "test:all": [
             "@test:phpcs",

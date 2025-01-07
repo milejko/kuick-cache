@@ -1,9 +1,11 @@
 <?php
 
-namespace Tests\Kuick\Cache;
+namespace Tests\Unit\Kuick\Cache;
 
-use Kuick\Cache\ArrayCache;
+use DateInterval;
+use Kuick\Cache\InMemoryCache;
 use PHPUnit\Framework\TestCase;
+use Psr\SimpleCache\InvalidArgumentException;
 use stdClass;
 
 use function PHPUnit\Framework\assertEquals;
@@ -12,13 +14,14 @@ use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 
 /**
- * @covers \Kuick\Cache\ArrayCache
+ * @covers \Kuick\Cache\InMemoryCache
+ * @covers \Kuick\Cache\AbstractCache
  */
-class ArrayCacheTest extends TestCase
+class InMemoryCacheTest extends TestCase
 {
     public function testIfCacheCanBeSetAndGet(): void
     {
-        $cache = new ArrayCache();
+        $cache = new InMemoryCache();
         assertNull($cache->get('inexistent-key'));
         assertFalse($cache->has('inexistent-key'));
         assertTrue($cache->set('/my/key', 'test-value'));
@@ -30,7 +33,7 @@ class ArrayCacheTest extends TestCase
 
     public function testIfCacheCanBeOverwritten(): void
     {
-        $cache = new ArrayCache();
+        $cache = new InMemoryCache();
         assertTrue($cache->set('foo', 'bar'));
         assertEquals('bar', $cache->get('foo'));
         assertTrue($cache->set('foo', 'baz'));
@@ -39,7 +42,7 @@ class ArrayCacheTest extends TestCase
 
     public function testIfCacheCanBeDeleted(): void
     {
-        $cache = new ArrayCache();
+        $cache = new InMemoryCache();
         assertTrue($cache->set('foo', 'bar'));
         assertEquals('bar', $cache->get('foo'));
         assertTrue($cache->delete('foo'));
@@ -48,16 +51,19 @@ class ArrayCacheTest extends TestCase
 
     public function testIfExpiredCacheReturnsNull(): void
     {
-        $cache = new ArrayCache();
+        $cache = new InMemoryCache();
         $cache->set('foo', 'bar', 1);
+        $cache->set('bar', 'baz', new DateInterval('PT1S'));
         assertEquals('bar', $cache->get('foo'));
+        assertEquals('baz', $cache->get('bar'));
         sleep(1);
         assertNull($cache->get('foo'));
+        assertNull($cache->get('bar'));
     }
 
     public function testMultipleSetsAndGetsDeletes(): void
     {
-        $cache = new ArrayCache();
+        $cache = new InMemoryCache();
         $sourceArray = [
             'first' => 'first value',
             'second' => 'second value',
@@ -71,7 +77,7 @@ class ArrayCacheTest extends TestCase
 
     public function testClear(): void
     {
-        $cache = new ArrayCache();
+        $cache = new InMemoryCache();
         $cache->set('first', 'first value');
         $cache->setMultiple(
             [
@@ -86,5 +92,19 @@ class ArrayCacheTest extends TestCase
         assertFalse($cache->has('foo'));
         assertFalse($cache->has('first'));
         assertFalse($cache->has('baz'));
+    }
+
+    public function testIfKeyTooLongThrowsException(): void
+    {
+        $cache = new InMemoryCache();
+        $this->expectException(InvalidArgumentException::class);
+        $cache->set('512+character-key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'bar');
+    }
+
+    public function testIfKeyTooShortThrowsException(): void
+    {
+        $cache = new InMemoryCache();
+        $this->expectException(InvalidArgumentException::class);
+        $cache->set('', 'bar');
     }
 }
