@@ -3,7 +3,7 @@
 namespace Tests\Unit\Kuick\Cache\Serializers;
 
 use PHPUnit\Framework\TestCase;
-use Kuick\Cache\Serializers\SafeSerializer;
+use Kuick\Cache\Serializers\GzipSerializer;
 use Kuick\Cache\Serializers\SerializerException;
 use stdClass;
 
@@ -12,15 +12,15 @@ use function PHPUnit\Framework\assertIsString;
 use function PHPUnit\Framework\assertNotEmpty;
 
 /**
- * @covers \Kuick\Cache\Serializers\SafeSerializer
+ * @covers \Kuick\Cache\Serializers\GzipSerializer
  */
-class SafeSerializerTest extends TestCase
+class GzdeflateSafeSerializerTest extends TestCase
 {
-    protected SafeSerializer $serializer;
+    protected GzipSerializer $serializer;
 
     protected function setUp(): void
     {
-        $this->serializer = new SafeSerializer();
+        $this->serializer = new GzipSerializer();
     }
 
     public function testIfSerializationWorks(): void

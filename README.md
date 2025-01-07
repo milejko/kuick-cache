@@ -41,20 +41,20 @@ $fileCache  = $cacheFactory('file:///tmp/cache');               // FilesystemCac
 $redisCache = $cacheFactory('redis://redis-server.com:6379/2'); // RedisCache instance
 ```
 3. Customizing the serializer:<br>
-With larger datasets it can be beneficial to use Gzdeflate based serializer.<br>
-On the other hand Json based serializers are safer to use, as stored objects are casted to simple, JSON objects.
+Saved data can be serialized with one of available serializers: default, json, gzip and gzip-json.<br>
+With larger datasets it can be beneficial to use Gzip serializer, on the other hand Json based serializers are safer to use, as stored objects are casted to simple, JSON objects.
 ```
 <?php
 
 use Kuick\Cache\CacheFactory;
 use Kuick\Cache\FilesystemCache;
-use Kuick\Cache\Serializers\GzdeflateJsonSerializer;
+use Kuick\Cache\Serializers\GzipJsonSerializer;
 
-$fileCache  = (new CacheFactory())('file:///tmp/cache?serializer=gzdeflate-json');
+$fileCache  = (new CacheFactory())('file:///tmp/cache?serializer=gzip-json');
 
 // equivalent to:
 
-$fileCache  = new FilesystemCache('/tmp/cache', new GzdeflateJsonSerializer());
+$fileCache  = new FilesystemCache('/tmp/cache', new GzipJsonSerializer());
 ```
 
 4. Method overview<br>

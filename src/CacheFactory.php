@@ -12,10 +12,10 @@ namespace Kuick\Cache;
 
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Tools\DsnParser as DoctrineDsnParser;
-use Kuick\Cache\Serializers\GzdeflateJsonSerializer;
-use Kuick\Cache\Serializers\GzdeflateSafeSerializer;
+use Kuick\Cache\Serializers\GzipJsonSerializer;
+use Kuick\Cache\Serializers\GzipSerializer;
 use Kuick\Cache\Serializers\JsonSerializer;
-use Kuick\Cache\Serializers\SafeSerializer;
+use Kuick\Cache\Serializers\Serializer;
 use Kuick\Redis\RedisClientFactory;
 use Nyholm\Dsn\DsnParser;
 use Psr\SimpleCache\CacheInterface;
@@ -32,12 +32,12 @@ class CacheFactory
     public function __invoke(string $dsnString): CacheInterface
     {
         $dsn = DsnParser::parse($dsnString);
-        $serializer = match ($dsn->getParameter('serializer', 'safe')) {
-            'gzdeflate' => new GzdeflateSafeSerializer(),
-            'gzdeflate-json' => new GzdeflateJsonSerializer(),
+        $serializer = match ($dsn->getParameter('serializer', 'default')) {
+            'gzip' => new GzipSerializer(),
+            'gzip-json' => new GzipJsonSerializer(),
             'json' => new JsonSerializer(),
-            'safe' => new SafeSerializer(),
-            default => throw new InvalidArgumentException('Serializer invalid: should be one of safe, json, gzdeflate or gzdeflate-json'),
+            'default' => new Serializer(),
+            default => throw new InvalidArgumentException('Serializer invalid: should be one of default, json, gzip or gzip-json'),
         };
         switch ($dsn->getScheme()) {
             case 'in-memory':

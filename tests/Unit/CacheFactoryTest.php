@@ -44,7 +44,7 @@ class CacheFactoryTest extends TestCase
 
     public function testIfInMemoryCacheIsCreated(): void
     {
-        $cache = (new CacheFactory())('array://');
+        $cache = (new CacheFactory())('in-memory://');
         assertInstanceOf(InMemoryCache::class, $cache);
     }
 

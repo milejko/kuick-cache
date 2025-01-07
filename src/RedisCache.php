@@ -11,7 +11,7 @@
 namespace Kuick\Cache;
 
 use DateInterval;
-use Kuick\Cache\Serializers\SafeSerializer;
+use Kuick\Cache\Serializers\Serializer;
 use Kuick\Cache\Serializers\SerializerInterface;
 use Kuick\Redis\RedisInterface;
 use Psr\SimpleCache\CacheInterface;
@@ -24,7 +24,7 @@ class RedisCache extends AbstractCache implements CacheInterface
 
     public function __construct(
         private Redis|RedisInterface $redis,
-        private SerializerInterface $serializer = new SafeSerializer(),
+        private SerializerInterface $serializer = new Serializer(),
     ) {
     }
 

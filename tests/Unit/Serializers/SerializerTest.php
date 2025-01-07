@@ -3,7 +3,7 @@
 namespace Tests\Unit\Kuick\Cache\Serializers;
 
 use PHPUnit\Framework\TestCase;
-use Kuick\Cache\Serializers\GzdeflateJsonSerializer;
+use Kuick\Cache\Serializers\Serializer;
 use Kuick\Cache\Serializers\SerializerException;
 use stdClass;
 
@@ -12,15 +12,15 @@ use function PHPUnit\Framework\assertIsString;
 use function PHPUnit\Framework\assertNotEmpty;
 
 /**
- * @covers \Kuick\Cache\Serializers\GzdeflateJsonSerializer
+ * @covers \Kuick\Cache\Serializers\Serializer
  */
-class GzdeflateJsonSerializerTest extends TestCase
+class SerializerTest extends TestCase
 {
-    protected GzdeflateJsonSerializer $serializer;
+    protected Serializer $serializer;
 
     protected function setUp(): void
     {
-        $this->serializer = new GzdeflateJsonSerializer();
+        $this->serializer = new Serializer();
     }
 
     public function testIfSerializationWorks(): void
@@ -30,8 +30,7 @@ class GzdeflateJsonSerializerTest extends TestCase
         assertIsString($serialized);
         assertNotEmpty($serialized);
         $unserializedData = $this->serializer->unserialize($serialized);
-        // WARNING: json serialized does not preserve object types
-        assertEquals(['key' => 'value', 'key2' => []], $unserializedData);
+        assertEquals($data, $unserializedData);
     }
 
     public function testIfBrokenDataThrowsException(): void

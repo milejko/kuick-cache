@@ -10,16 +10,11 @@
 
 namespace Kuick\Cache\Serializers;
 
-/**
- * Gzinflate Safe serializer adds compression to the standard Safe serializer
- */
-class GzdeflateSafeSerializer implements SerializerInterface
+class Serializer implements SerializerInterface
 {
-    private const COMPRESSION_LEVEL = 9;
-
     public function serialize(mixed $value): string
     {
-        return (string) gzdeflate((new SafeSerializer())->serialize($value), self::COMPRESSION_LEVEL);
+        return serialize($value);
     }
 
     /**
@@ -27,10 +22,10 @@ class GzdeflateSafeSerializer implements SerializerInterface
      */
     public function unserialize(string $serializedValue): mixed
     {
-        $decompressed = @gzinflate($serializedValue);
-        if (false === $decompressed) {
-            throw new SerializerException('Unable to unserialize value');
+        $unserializedValue = @unserialize($serializedValue);
+        if (false === $unserializedValue) {
+            throw new SerializerException('Failed to unserialize value');
         }
-        return (new SafeSerializer())->unserialize($decompressed);
+        return $unserializedValue;
     }
 }

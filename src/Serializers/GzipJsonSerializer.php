@@ -11,9 +11,9 @@
 namespace Kuick\Cache\Serializers;
 
 /**
- * Gzinflate JSON serializer adds compression to the standard Json serializer
+ * Gzip JSON serializer adds compression to the standard Json serializer
  */
-class GzdeflateJsonSerializer implements SerializerInterface
+class GzipJsonSerializer implements SerializerInterface
 {
     private const COMPRESSION_LEVEL = 9;
 
