@@ -1,10 +1,12 @@
 <?php
 
-namespace Tests\Kuick\Cache;
+namespace Tests\Unit\Kuick\Cache;
 
 use Kuick\Cache\RedisCache;
 use PHPUnit\Framework\TestCase;
 use Kuick\Redis\RedisMock;
+use Psr\SimpleCache\CacheException;
+use Redis;
 use stdClass;
 
 use function PHPUnit\Framework\assertEquals;
@@ -93,5 +95,54 @@ class RedisCacheTest extends TestCase
         $cache = new RedisCache($redisMock = new RedisMock());
         $redisMock->set('foo', null);
         assertNull($cache->get('foo'));
+    }
+
+    public function testRealRedisGetThrowsException(): void
+    {
+        $cache = new RedisCache(new Redis());
+        //redis unavailable
+        $this->expectException(CacheException::class);
+        $cache->get('inexistent-key');
+    }
+
+    public function testRealRedisSetThrowsException(): void
+    {
+        $cache = new RedisCache(new Redis());
+        //redis unavailable
+        $this->expectException(CacheException::class);
+        $cache->set('foo', 'bar');
+    }
+
+    public function testRealRedisHasThrowsException(): void
+    {
+        $cache = new RedisCache(new Redis());
+        //redis unavailable
+        $this->expectException(CacheException::class);
+        $cache->has('foo');
+    }
+
+    public function testRealRedisDeleteThrowsException(): void
+    {
+        $cache = new RedisCache(new Redis());
+        //redis unavailable
+        $this->expectException(CacheException::class);
+        $cache->delete('foo');
+    }
+
+    public function testRealRedisClearThrowsException(): void
+    {
+        $cache = new RedisCache(new Redis());
+        //redis unavailable
+        $this->expectException(CacheException::class);
+        $cache->clear();
+    }
+
+    public function testBrokenCacheValueValidation(): void
+    {
+        $redis = new RedisMock();
+        $redis->set('foo', new stdClass());
+        $cache = new RedisCache($redis);
+        $this->expectException(CacheException::class);
+        $cache->get('foo');
     }
 }

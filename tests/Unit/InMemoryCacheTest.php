@@ -1,9 +1,11 @@
 <?php
 
-namespace Tests\Kuick\Cache;
+namespace Tests\Unit\Kuick\Cache;
 
+use DateInterval;
 use Kuick\Cache\InMemoryCache;
 use PHPUnit\Framework\TestCase;
+use Psr\SimpleCache\InvalidArgumentException;
 use stdClass;
 
 use function PHPUnit\Framework\assertEquals;
@@ -13,6 +15,7 @@ use function PHPUnit\Framework\assertTrue;
 
 /**
  * @covers \Kuick\Cache\InMemoryCache
+ * @covers \Kuick\Cache\AbstractCache
  */
 class InMemoryCacheTest extends TestCase
 {
@@ -50,9 +53,12 @@ class InMemoryCacheTest extends TestCase
     {
         $cache = new InMemoryCache();
         $cache->set('foo', 'bar', 1);
+        $cache->set('bar', 'baz', new DateInterval('PT1S'));
         assertEquals('bar', $cache->get('foo'));
+        assertEquals('baz', $cache->get('bar'));
         sleep(1);
         assertNull($cache->get('foo'));
+        assertNull($cache->get('bar'));
     }
 
     public function testMultipleSetsAndGetsDeletes(): void
@@ -86,5 +92,19 @@ class InMemoryCacheTest extends TestCase
         assertFalse($cache->has('foo'));
         assertFalse($cache->has('first'));
         assertFalse($cache->has('baz'));
+    }
+
+    public function testIfKeyTooLongThrowsException(): void
+    {
+        $cache = new InMemoryCache();
+        $this->expectException(InvalidArgumentException::class);
+        $cache->set('512+character-key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'bar');
+    }
+
+    public function testIfKeyTooShortThrowsException(): void
+    {
+        $cache = new InMemoryCache();
+        $this->expectException(InvalidArgumentException::class);
+        $cache->set('', 'bar');
     }
 }

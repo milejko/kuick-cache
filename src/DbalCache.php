@@ -45,7 +45,7 @@ class DbalCache extends AbstractCache implements CacheInterface
                 'now' => time(),
             ]);
         $result = $query->fetchOne();
-        if (!$result) {
+        if (!is_string($result)) {
             return $default;
         }
         return $this->serializer->unserialize($result);

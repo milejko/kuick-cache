@@ -20,11 +20,11 @@ class JsonSerializer implements SerializerInterface
 {
     public function serialize(mixed $value): string
     {
-        $encoded = json_encode($value);
-        if (false === $encoded) {
+        try {
+            return json_encode($value, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
             throw new SerializerException('Unable to serialize value');
         }
-        return $encoded;
     }
 
     public function unserialize(string $serializedValue): mixed

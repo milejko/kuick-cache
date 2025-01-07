@@ -19,16 +19,15 @@ class GzdeflateSafeSerializer implements SerializerInterface
 
     public function serialize(mixed $value): string
     {
-        $compressed = gzdeflate((new SafeSerializer())->serialize($value), self::COMPRESSION_LEVEL);
-        if (false === $compressed) {
-            throw new SerializerException('Unable to serialize value');
-        }
-        return $compressed;
+        return (string) gzdeflate((new SafeSerializer())->serialize($value), self::COMPRESSION_LEVEL);
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.ErrorControlOperator)
+     */
     public function unserialize(string $serializedValue): mixed
     {
-        $decompressed = gzinflate($serializedValue);
+        $decompressed = @gzinflate($serializedValue);
         if (false === $decompressed) {
             throw new SerializerException('Unable to unserialize value');
         }

@@ -18,7 +18,7 @@ use Psr\SimpleCache\CacheInterface;
 class InMemoryCache extends AbstractCache implements CacheInterface
 {
     /**
-     * @var array<string, mixed>
+     * @var array<string, string>
      */
     private array $store = [];
 
@@ -78,11 +78,5 @@ class InMemoryCache extends AbstractCache implements CacheInterface
     {
         $this->store = $this->ttls = [];
         return true;
-    }
-
-    protected function sanitizeKey(string $key): string
-    {
-        // empty sanitizer
-        return $key;
     }
 }

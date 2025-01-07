@@ -17,6 +17,9 @@ class SafeSerializer implements SerializerInterface
         return serialize($value);
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.ErrorControlOperator)
+     */
     public function unserialize(string $serializedValue): mixed
     {
         $unserializedValue = @unserialize($serializedValue);

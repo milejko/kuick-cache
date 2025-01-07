@@ -28,12 +28,16 @@ class FilesystemCache extends AbstractCache implements CacheInterface
         private SerializerInterface $serializer = new SafeSerializer()
     ) {
         if (!file_exists($basePath)) {
-            mkdir($basePath, 0777, true) || throw new CacheException('Could not create directory: ' . $basePath);
-        } else {
-            is_dir($basePath) || throw new CacheException('Cache path is not a directory: ' . $basePath);
+            mkdir($basePath, 0777, true) || throw new CacheException('Unable to create cache directory: ' . $basePath);
+        }
+        if (!is_dir($basePath) || !is_writable($basePath)) {
+            throw new CacheException('Path is not a writable directory: ' . $basePath);
         }
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.ErrorControlOperator)
+     */
     public function get(string $key, mixed $default = null): mixed
     {
         $this->validateKey($key);
@@ -41,7 +45,7 @@ class FilesystemCache extends AbstractCache implements CacheInterface
         if (false === $rawData) {
             return $default;
         }
-        $separatorPosition = strpos($rawData, self::TTL_SEPARATOR);
+        $separatorPosition = (int) strpos($rawData, self::TTL_SEPARATOR);
         $expirationTime = substr($rawData, 0, $separatorPosition);
         if ($expirationTime != 0 && $expirationTime <= time()) {
             $this->delete($key);
@@ -50,14 +54,16 @@ class FilesystemCache extends AbstractCache implements CacheInterface
         return $this->serializer->unserialize(substr($rawData, $separatorPosition + 1));
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.ErrorControlOperator)
+     */
     public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
     {
         $this->validateKey($key);
         $intTtl = $this->ttlToInt($ttl);
         $expirationTime = 0 == $intTtl ? 0 : time() + $intTtl;
-        if (false === file_put_contents($this->sanitizeKey($key), sprintf(self::CONTENT_TEMPLATE, $expirationTime, $this->serializer->serialize($value)))) {
-            throw new CacheException('Could not write to file: ' . $this->sanitizeKey($key));
-        }
+        @file_put_contents($this->sanitizeKey($key), sprintf(self::CONTENT_TEMPLATE, $expirationTime, $this->serializer->serialize($value)))
+            || throw new CacheException('Unable to write cache file');
         return true;
     }
 
@@ -66,12 +72,18 @@ class FilesystemCache extends AbstractCache implements CacheInterface
         return null !== $this->get($key);
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.ErrorControlOperator)
+     */
     public function delete(string $key): bool
     {
         $this->validateKey($key);
         return @unlink($this->sanitizeKey($key));
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.ErrorControlOperator)
+     */
     public function clear(): bool
     {
         //GlobIterator is the best performing directory browser for PHP

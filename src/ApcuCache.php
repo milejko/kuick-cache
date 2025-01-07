@@ -38,10 +38,7 @@ class ApcuCache extends AbstractCache implements CacheInterface
     public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
     {
         $this->validateKey($key);
-        if (true === apcu_store($this->sanitizeKey($key), $this->serializer->serialize($value), $this->ttlToInt($ttl))) {
-            return true;
-        }
-        return false;
+        return (bool) apcu_store($this->sanitizeKey($key), $this->serializer->serialize($value), $this->ttlToInt($ttl));
     }
 
     public function has(string $key): bool
@@ -53,17 +50,11 @@ class ApcuCache extends AbstractCache implements CacheInterface
     public function delete(string $key): bool
     {
         $this->validateKey($key);
-        if (true === apcu_delete($this->sanitizeKey($key))) {
-            return true;
-        }
-        return false;
+        return (bool) apcu_delete($this->sanitizeKey($key));
     }
 
     public function clear(): bool
     {
-        if (true === apcu_clear_cache()) {
-            return true;
-        }
-        return false;
+        return (bool) apcu_clear_cache();
     }
 }

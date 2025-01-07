@@ -1,11 +1,12 @@
 <?php
 
-namespace Tests\Kuick\Cache;
+namespace Tests\Unit\Kuick\Cache;
 
 use Kuick\Cache\ApcuCache;
 use Kuick\Cache\InvalidArgumentException;
 use Kuick\Cache\RedisCache;
 use Kuick\Cache\CacheFactory;
+use Kuick\Cache\DbalCache;
 use Kuick\Cache\FilesystemCache;
 use Kuick\Cache\InMemoryCache;
 use PHPUnit\Framework\TestCase;
@@ -51,6 +52,12 @@ class CacheFactoryTest extends TestCase
     {
         $cache = (new CacheFactory())('apcu://');
         assertInstanceOf(ApcuCache::class, $cache);
+    }
+
+    public function testIfDbalCacheIsCreated(): void
+    {
+        $cache = (new CacheFactory())('pdo-sqlite://:memory:');
+        assertInstanceOf(DbalCache::class, $cache);
     }
 
     public function testIfExceptionIsThrownForInvalidDSN(): void

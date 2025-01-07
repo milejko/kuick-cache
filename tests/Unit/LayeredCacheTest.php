@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Kuick\Cache;
+namespace Tests\Unit\Kuick\Cache;
 
 use Kuick\Cache\InMemoryCache;
 use Kuick\Cache\LayeredCache;
@@ -20,8 +20,8 @@ class LayeredCacheTest extends TestCase
     {
         $cache = new LayeredCache(
             [
-                $firstArrayCache = new InMemoryCache(),
-                $secondArrayCache = new InMemoryCache(),
+                $firstCache = new InMemoryCache(),
+                $secondCache = new InMemoryCache(),
             ]
         );
         assertNull($cache->get('inexistent-key'));
@@ -30,21 +30,51 @@ class LayeredCacheTest extends TestCase
         assertTrue($cache->has('/my/key'));
         assertEquals('test-value', $cache->get('/my/key'));
 
-        assertFalse($firstArrayCache->has('inexistent-key'));
-        assertTrue($firstArrayCache->has('/my/key'));
-        assertEquals('test-value', $firstArrayCache->get('/my/key'));
+        assertFalse($firstCache->has('inexistent-key'));
+        assertTrue($firstCache->has('/my/key'));
+        assertEquals('test-value', $firstCache->get('/my/key'));
 
-        assertFalse($secondArrayCache->has('inexistent-key'));
-        assertTrue($secondArrayCache->has('/my/key'));
-        assertEquals('test-value', $secondArrayCache->get('/my/key'));
+        assertFalse($secondCache->has('inexistent-key'));
+        assertTrue($secondCache->has('/my/key'));
+        assertEquals('test-value', $secondCache->get('/my/key'));
+    }
+
+    public function testLayeredAvailability(): void
+    {
+        $cache = new LayeredCache(
+            [
+                $firstCache = new InMemoryCache(),
+                $secondCache = new InMemoryCache(),
+            ]
+        );
+        //second cache has "foo"
+        $secondCache->set('foo', 'bar');
+        $secondCache->set('bar', 'baz');
+
+        assertNull($firstCache->get('foo'));
+        assertFalse($firstCache->has('foo'));
+        assertNull($firstCache->get('bar'));
+        assertFalse($firstCache->has('bar'));
+
+        //layered cache has "foo"
+        assertEquals('bar', $cache->get('foo'));
+
+        //cache was populated
+        assertEquals('bar', $firstCache->get('foo'));
+
+        //layered cache has "bar"
+        assertTrue($cache->has('bar'));
+        //cache was populated
+        assertTrue($firstCache->has('bar'));
+        assertEquals($firstCache->get('bar'), $secondCache->get('bar'));
     }
 
     public function testIfCacheCanBeOverwritten(): void
     {
         $cache = new LayeredCache(
             [
-                $firstArrayCache = new InMemoryCache(),
-                $secondArrayCache = new InMemoryCache(),
+                $firstCache = new InMemoryCache(),
+                $secondCache = new InMemoryCache(),
             ]
         );
         assertTrue($cache->set('foo', 'bar'));
@@ -52,16 +82,16 @@ class LayeredCacheTest extends TestCase
         assertTrue($cache->set('foo', 'baz'));
         assertEquals('baz', $cache->get('foo'));
 
-        assertEquals('baz', $firstArrayCache->get('foo'));
-        assertEquals('baz', $secondArrayCache->get('foo'));
+        assertEquals('baz', $firstCache->get('foo'));
+        assertEquals('baz', $secondCache->get('foo'));
     }
 
     public function testIfCacheCanBeDeleted(): void
     {
         $cache = new LayeredCache(
             [
-                $firstArrayCache = new InMemoryCache(),
-                $secondArrayCache = new InMemoryCache(),
+                $firstCache = new InMemoryCache(),
+                $secondCache = new InMemoryCache(),
             ]
         );
         assertTrue($cache->set('foo', 'bar'));
@@ -69,16 +99,16 @@ class LayeredCacheTest extends TestCase
         assertTrue($cache->delete('foo'));
         assertNull($cache->get('foo'));
 
-        assertNull($firstArrayCache->get('foo'));
-        assertNull($secondArrayCache->get('foo'));
+        assertNull($firstCache->get('foo'));
+        assertNull($secondCache->get('foo'));
     }
 
     public function testIfExpiredCacheReturnsNull(): void
     {
         $cache = new LayeredCache(
             [
-                $firstArrayCache = new InMemoryCache(),
-                $secondArrayCache = new InMemoryCache(),
+                $firstCache = new InMemoryCache(),
+                $secondCache = new InMemoryCache(),
             ]
         );
         $cache->set('foo', 'bar', 1);
@@ -86,16 +116,16 @@ class LayeredCacheTest extends TestCase
         sleep(1);
         assertNull($cache->get('foo'));
 
-        assertNull($firstArrayCache->get('foo'));
-        assertNull($secondArrayCache->get('foo'));
+        assertNull($firstCache->get('foo'));
+        assertNull($secondCache->get('foo'));
     }
 
     public function testMultipleSetsAndGetsDeletes(): void
     {
         $cache = new LayeredCache(
             [
-                $firstArrayCache = new InMemoryCache(),
-                $secondArrayCache = new InMemoryCache(),
+                $firstCache = new InMemoryCache(),
+                $secondCache = new InMemoryCache(),
             ]
         );
         $sourceArray = [
@@ -108,16 +138,16 @@ class LayeredCacheTest extends TestCase
         assertTrue($cache->deleteMultiple(['second', 'third']));
         assertEquals(['first' => 'first value'], $cache->getMultiple(['first']));
 
-        assertEquals(['first' => 'first value'], $firstArrayCache->getMultiple(['first']));
-        assertEquals(['first' => 'first value'], $secondArrayCache->getMultiple(['first']));
+        assertEquals(['first' => 'first value'], $firstCache->getMultiple(['first']));
+        assertEquals(['first' => 'first value'], $secondCache->getMultiple(['first']));
     }
 
     public function testClear(): void
     {
         $cache = new LayeredCache(
             [
-                $firstArrayCache = new InMemoryCache(),
-                $secondArrayCache = new InMemoryCache(),
+                $firstCache = new InMemoryCache(),
+                $secondCache = new InMemoryCache(),
             ]
         );
         $cache->set('first', 'first value');
@@ -135,11 +165,11 @@ class LayeredCacheTest extends TestCase
         assertFalse($cache->has('first'));
         assertFalse($cache->has('baz'));
 
-        assertFalse($firstArrayCache->has('foo'));
-        assertFalse($firstArrayCache->has('first'));
-        assertFalse($firstArrayCache->has('baz'));
-        assertFalse($secondArrayCache->has('foo'));
-        assertFalse($secondArrayCache->has('first'));
-        assertFalse($secondArrayCache->has('baz'));
+        assertFalse($firstCache->has('foo'));
+        assertFalse($firstCache->has('first'));
+        assertFalse($firstCache->has('baz'));
+        assertFalse($secondCache->has('foo'));
+        assertFalse($secondCache->has('first'));
+        assertFalse($secondCache->has('baz'));
     }
 }

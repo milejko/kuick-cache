@@ -1,21 +1,15 @@
 <?php
 
-namespace Tests\Kuick\Cache;
+namespace Tests\Unit\Kuick\Cache;
 
 use Doctrine\DBAL\DriverManager;
-use Kuick\Cache\ApcuCache;
 use Kuick\Cache\InvalidArgumentException;
-use Kuick\Cache\RedisCache;
-use Kuick\Cache\CacheFactory;
 use Kuick\Cache\DbalCache;
-use Kuick\Cache\FilesystemCache;
-use Kuick\Cache\InMemoryCache;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertFalse;
-use function PHPUnit\Framework\assertInstanceOf;
 use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 
@@ -133,5 +127,17 @@ class DbalCacheTest extends TestCase
         $cache = new DbalCache($dbal);
         $this->expectException(InvalidArgumentException::class);
         $cache->set('512+character-key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'bar');
+    }
+
+    public function testIfOnceCreatedDbDoesntNeedToBeRecreated(): void
+    {
+        $dbal = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+            'path' => '/tmp/test.db',
+        ]);
+        $cache = new DbalCache($dbal);
+        $cache = new DbalCache($dbal);
+
+        assertTrue($cache->set('foo', 'bar'));
     }
 }

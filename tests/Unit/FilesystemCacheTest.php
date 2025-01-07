@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Kuick\Cache;
+namespace Tests\Unit\Kuick\Cache;
 
 use Kuick\Cache\CacheException;
 use Kuick\Cache\FilesystemCache;
@@ -114,12 +114,11 @@ class FilesystemCacheTest extends TestCase
         new FilesystemCache(self::$cacheDir . '/not-a-dir');
     }
 
-    public function testIfKeyToShortThrowsException(): void
+    public function testIf(): void
     {
-        $cache = new FilesystemCache(self::$cacheDir);
-        //key to short
-        $this->expectException(InvalidArgumentException::class);
-        $cache->set('', 'bar');
+        file_put_contents(self::$cacheDir . '/not-a-dir', 'some content');
+        $this->expectException(CacheException::class);
+        new FilesystemCache(self::$cacheDir . '/not-a-dir');
     }
 
     public function testIfKeyTooLongThrowsException(): void
@@ -127,5 +126,14 @@ class FilesystemCacheTest extends TestCase
         $cache = new FilesystemCache(self::$cacheDir);
         $this->expectException(InvalidArgumentException::class);
         $cache->set('512+character-key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'bar');
+    }
+
+    public function testIfSettingCacheToInexistentDirThrowsException(): void
+    {
+        $cache = new FilesystemCache(self::$cacheDir);
+        $fs = new Filesystem();
+        $fs->remove(self::$cacheDir);
+        $this->expectException(CacheException::class);
+        $cache->set('foo', 'bar');
     }
 }

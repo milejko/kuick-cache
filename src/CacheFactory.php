@@ -20,6 +20,9 @@ use Kuick\Redis\RedisClientFactory;
 use Nyholm\Dsn\DsnParser;
 use Psr\SimpleCache\CacheInterface;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class CacheFactory
 {
     /**
@@ -36,15 +39,14 @@ class CacheFactory
             'safe' => new SafeSerializer(),
             default => throw new InvalidArgumentException('Serializer invalid: should be one of safe, json, gzdeflate or gzdeflate-json'),
         };
-        if (null === $serializer) {
-            $serializer = new SafeSerializer();
-        }
         switch ($dsn->getScheme()) {
             case 'array':
                 return new InMemoryCache();
             case 'apcu':
                 return new ApcuCache($serializer);
-            case 'dbal':
+            case 'pdo-sqlite':
+            case 'pdo-mysql':
+            case 'pdo-pgsql':
                 $dsnParser = new DoctrineDsnParser();
                 return new DbalCache(DriverManager::getConnection($dsnParser->parse($dsnString)), $serializer);
             case 'file':

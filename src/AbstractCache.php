@@ -33,6 +33,7 @@ abstract class AbstractCache implements CacheInterface
     /**
      * @throws CacheException
      * @throws InvalidArgumentException
+     * @param iterable<string, mixed> $values
      */
     public function setMultiple(iterable $values, null|int|DateInterval $ttl = null): bool
     {
@@ -46,6 +47,7 @@ abstract class AbstractCache implements CacheInterface
     /**
      * @throws CacheException
      * @throws InvalidArgumentException
+     * @param iterable<string> $keys
      */
     public function deleteMultiple(iterable $keys): bool
     {
