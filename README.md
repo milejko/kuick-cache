@@ -71,9 +71,24 @@ $cache->get('inexistent, 'default') // "default" (using the default value as the
 $cache->has('foo');                 // true
 $cache->delete('foo');              // remove "foo"
 
-$cache->setMultiple(['foo' => 'bar', 'bar' => 'baz']); // set "foo" to "bar", and "bar" to "baz"
-$cache->getMultiple(['foo', 'bar']);                   // ['foo' => 'bar', 'bar' => 'baz']
-$cache->deleteMultiple(['foo', 'bar']);                // removes "foo" and "bar"
+// set "foo" to "bar", and "bar" to "baz"
+$cache->setMultiple([
+    'foo' => 'bar',
+    'bar' => 'baz',
+]);
 
-$cache->clear(); // removes all the keys
+// ['foo' => 'bar', 'bar' => 'baz']
+$cache->getMultiple([
+    'foo',
+    'bar',
+]);
+
+// removes "foo" and "bar"
+$cache->deleteMultiple([
+    'foo',
+    'bar',
+]);
+
+// removes all the keys
+$cache->clear();
 ```
