@@ -40,7 +40,7 @@ class CacheFactory
             default => throw new InvalidArgumentException('Serializer invalid: should be one of safe, json, gzdeflate or gzdeflate-json'),
         };
         switch ($dsn->getScheme()) {
-            case 'array':
+            case 'in-memory':
                 return new InMemoryCache();
             case 'apcu':
                 return new ApcuCache($serializer);
@@ -57,6 +57,6 @@ class CacheFactory
                 $redisClient = (new RedisClientFactory())($dsnString);
                 return new RedisCache($redisClient, $serializer);
         }
-        throw new InvalidArgumentException('Cache backend invalid: should be one of array, apcu, file or redis');
+        throw new InvalidArgumentException('Cache backend invalid: should be one of in-memory, apcu, file, redis, pdo-mysql, pdo-pgsql, pdo-sqlite');
     }
 }
