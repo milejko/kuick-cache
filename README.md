@@ -14,10 +14,6 @@ Supporting popular backends such as:
 - APCu
 - InMemory (aka ArrayCache)
 - Layered
-Supported serializers:
-- Standard PHP serializer
-- Gzdeflate supporting data compression
-- Json based serializer (fast, slim, and safe)
 
 ## Usage
 1. Direct object creation:
@@ -40,7 +36,44 @@ use Kuick\Cache\CacheFactory;
 $cacheFactory = new CacheFactory();
 
 $dbCache    = $cacheFactory('pdo-mysql://127.0.0.1:3306/mydb'); // DbalCache instance
-$apcuCache  = $cacheFactory('apcu://'); // ApcuCache instance
-$fileCache  = $cacheFactory('file:///tmp/cache'); // FilesystemCache instance
+$apcuCache  = $cacheFactory('apcu://');                         // ApcuCache instance
+$fileCache  = $cacheFactory('file:///tmp/cache');               // FilesystemCache instance
 $redisCache = $cacheFactory('redis://redis-server.com:6379/2'); // RedisCache instance
+```
+3. Customizing the serializer:
+With larger datasets it can be beneficial to use Gzdeflate based serializer.
+On the other hand Json based serializers are safer to use, as stored objects are casted to simple, JSON objects.
+```
+<?php
+
+use Kuick\Cache\CacheFactory;
+use Kuick\Cache\FilesystemCache;
+use Kuick\Cache\Serializers\GzdeflateJsonSerializer;
+
+$fileCache  = (new CacheFactory())('file:///tmp/cache?serializer=gzdeflate-json');
+
+// equivalent to:
+
+$fileCache  = new FilesystemCache('/tmp/cache', new GzdeflateJsonSerializer());
+```
+
+4. Method overview
+Kuick Cache implements PSR-16 interface with no exceptions
+```
+<?php
+
+use Kuick\Cache\InMemoryCache;
+
+$cache = new InMemoryCache();
+$cache->set('foo', 'bar', 300);     // set "foo" to "bar", with 5 minutes ttl
+$cache->get('foo');                 // "bar"
+$cache->get('inexistent, 'default') // "default" (using the default value as the key does not exist)
+$cache->has('foo');                 // true
+$cache->delete('foo');              // remove "foo"
+
+$cache->setMultiple(['foo' => 'bar', 'bar' => 'baz']); // set "foo" to "bar", and "bar" to "baz"
+$cache->getMultiple(['foo', 'bar']);                   // ['foo' => 'bar', 'bar' => 'baz']
+$cache->deleteMultiple(['foo', 'bar']);                // removes "foo" and "bar"
+
+$cache->clear(); // removes all the keys
 ```
