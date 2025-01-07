@@ -40,8 +40,8 @@ $apcuCache  = $cacheFactory('apcu://');                         // ApcuCache ins
 $fileCache  = $cacheFactory('file:///tmp/cache');               // FilesystemCache instance
 $redisCache = $cacheFactory('redis://redis-server.com:6379/2'); // RedisCache instance
 ```
-3. Customizing the serializer:
-With larger datasets it can be beneficial to use Gzdeflate based serializer.
+3. Customizing the serializer:<br>
+With larger datasets it can be beneficial to use Gzdeflate based serializer.<br>
 On the other hand Json based serializers are safer to use, as stored objects are casted to simple, JSON objects.
 ```
 <?php
@@ -57,7 +57,7 @@ $fileCache  = (new CacheFactory())('file:///tmp/cache?serializer=gzdeflate-json'
 $fileCache  = new FilesystemCache('/tmp/cache', new GzdeflateJsonSerializer());
 ```
 
-4. Method overview
+4. Method overview<br>
 Kuick Cache implements PSR-16 interface with no exceptions
 ```
 <?php
