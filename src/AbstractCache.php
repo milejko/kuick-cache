@@ -25,7 +25,11 @@ abstract class AbstractCache implements CacheInterface
     {
         $result = [];
         foreach ($keys as $key) {
-            $result[$key] = $this->get($key, $default);
+            $singleValue = $this->get($key, $default);
+            if ($default === $singleValue) {
+                continue;
+            }
+            $result[$key] = $singleValue;
         }
         return $result;
     }

@@ -9,6 +9,7 @@ use Kuick\Cache\CacheFactory;
 use Kuick\Cache\DbalCache;
 use Kuick\Cache\FilesystemCache;
 use Kuick\Cache\InMemoryCache;
+use Kuick\Cache\NullCache;
 use PHPUnit\Framework\TestCase;
 
 use function PHPUnit\Framework\assertInstanceOf;
@@ -28,6 +29,12 @@ class CacheFactoryTest extends TestCase
         if (!extension_loaded('redis')) {
             self::markTestSkipped('Redis extension is not available');
         }
+    }
+
+    public function testIfNullCacheIsCreated(): void
+    {
+        $cache = (new CacheFactory())('null://');
+        assertInstanceOf(NullCache::class, $cache);
     }
 
     public function testIfFileCacheIsCreated(): void

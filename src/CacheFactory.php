@@ -28,6 +28,7 @@ class CacheFactory
     /**
      * @throws InvalidArgumentException
      * @SuppressWarnings(PHPMD.StaticAccess)
+     * @suppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function __invoke(string $dsnString): CacheInterface
     {
@@ -40,6 +41,8 @@ class CacheFactory
             default => throw new InvalidArgumentException('Serializer invalid: should be one of default, json, gzip or gzip-json'),
         };
         switch ($dsn->getScheme()) {
+            case 'null':
+                return new NullCache();
             case 'in-memory':
                 return new InMemoryCache();
             case 'apcu':
