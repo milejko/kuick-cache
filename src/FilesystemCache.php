@@ -96,6 +96,6 @@ class FilesystemCache extends AbstractCache implements CacheInterface
 
     protected function sanitizeKey(string $key): string
     {
-        return $this->basePath . '/' . md5($key);
+        return $this->basePath . '/' . parent::sanitizeKey($key);
     }
 }
