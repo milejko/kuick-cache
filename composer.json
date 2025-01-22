@@ -1,7 +1,7 @@
 {
     "name": "kuick/cache",
     "type": "library",
-    "description": "Kuick Cache is a slim PSR-16 Simple Cache Interface implementation, supporting popular backends including Redis, ApcU and FileSystem",
+    "description": "Kuick Cache is a slim PSR-16 Simple Cache Interface implementation, supporting backends including Redis, ApcU and FileSystem",
     "keywords": ["psr-16", "cache", "simple cache", "kuick"],
     "license": "MIT",
     "authors": [
