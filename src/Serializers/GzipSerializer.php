@@ -10,6 +10,8 @@
 
 namespace Kuick\Cache\Serializers;
 
+use Throwable;
+
 /**
  * GZip serializer adds compression to the standard serializer
  */
@@ -24,10 +26,15 @@ class GzipSerializer implements SerializerInterface
 
     /**
      * @SuppressWarnings(PHPMD.ErrorControlOperator)
+     * @SuppressWarnings(PHPMD.EmptyCatchBlock)
      */
     public function unserialize(string $serializedValue): mixed
     {
-        $decompressed = @gzinflate($serializedValue);
+        $decompressed = false;
+        try {
+            $decompressed = @gzinflate($serializedValue);
+        } catch (Throwable) {
+        }
         if (false === $decompressed) {
             throw new SerializerException('Unable to unserialize value');
         }

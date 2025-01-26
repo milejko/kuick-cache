@@ -16,6 +16,7 @@ use GlobIterator;
 use Kuick\Cache\Serializers\Serializer;
 use Kuick\Cache\Serializers\SerializerInterface;
 use Psr\SimpleCache\CacheInterface;
+use Throwable;
 
 class FilesystemCache extends AbstractCache implements CacheInterface
 {
@@ -37,11 +38,16 @@ class FilesystemCache extends AbstractCache implements CacheInterface
 
     /**
      * @SuppressWarnings(PHPMD.ErrorControlOperator)
+     * @SuppressWarnings(PHPMD.EmptyCatchBlock)
      */
     public function get(string $key, mixed $default = null): mixed
     {
         $this->validateKey($key);
-        $rawData = @file_get_contents($this->sanitizeKey($key));
+        $rawData = false;
+        try {
+            $rawData = @file_get_contents($this->sanitizeKey($key));
+        } catch (Throwable) {
+        }
         if (false === $rawData) {
             return $default;
         }
@@ -56,14 +62,21 @@ class FilesystemCache extends AbstractCache implements CacheInterface
 
     /**
      * @SuppressWarnings(PHPMD.ErrorControlOperator)
+     * @SuppressWarnings(PHPMD.EmptyCatchBlock)
      */
     public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
     {
         $this->validateKey($key);
         $intTtl = $this->ttlToInt($ttl);
         $expirationTime = 0 == $intTtl ? 0 : time() + $intTtl;
-        @file_put_contents($this->sanitizeKey($key), sprintf(self::CONTENT_TEMPLATE, $expirationTime, $this->serializer->serialize($value)))
-            || throw new CacheException('Unable to write cache file');
+        $result = false;
+        try {
+            $result = @file_put_contents($this->sanitizeKey($key), sprintf(self::CONTENT_TEMPLATE, $expirationTime, $this->serializer->serialize($value)));
+        } catch (Throwable) {
+        }
+        if (!$result) {
+            throw new CacheException('Unable to write cache file');
+        }
         return true;
     }
 
@@ -74,22 +87,31 @@ class FilesystemCache extends AbstractCache implements CacheInterface
 
     /**
      * @SuppressWarnings(PHPMD.ErrorControlOperator)
+     * @SuppressWarnings(PHPMD.EmptyCatchBlock)
      */
     public function delete(string $key): bool
     {
         $this->validateKey($key);
-        return @unlink($this->sanitizeKey($key));
+        try {
+            return @unlink($this->sanitizeKey($key));
+        } catch (Throwable) {
+        }
+        return false;
     }
 
     /**
      * @SuppressWarnings(PHPMD.ErrorControlOperator)
+     * @SuppressWarnings(PHPMD.EmptyCatchBlock)
      */
     public function clear(): bool
     {
         //GlobIterator is the best performing directory browser for PHP
         $directoryIterator = new GlobIterator($this->basePath . DIRECTORY_SEPARATOR . '*', FilesystemIterator::KEY_AS_FILENAME);
         foreach ($directoryIterator as $fileName) {
-            @unlink($fileName);
+            try {
+                @unlink($fileName);
+            } catch (Throwable) {
+            }
         }
         return true;
     }

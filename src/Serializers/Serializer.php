@@ -19,10 +19,15 @@ class Serializer implements SerializerInterface
 
     /**
      * @SuppressWarnings(PHPMD.ErrorControlOperator)
+     * @SuppressWarnings(PHPMD.EmptyCatchBlock)
      */
     public function unserialize(string $serializedValue): mixed
     {
-        $unserializedValue = @unserialize($serializedValue);
+        $unserializedValue = false;
+        try {
+            $unserializedValue = @unserialize($serializedValue);
+        } catch (\Throwable) {
+        }
         if (false === $unserializedValue) {
             throw new SerializerException('Failed to unserialize value');
         }
