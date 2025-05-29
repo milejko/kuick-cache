@@ -3,6 +3,7 @@
 namespace Tests\Unit\Kuick\Cache;
 
 use Kuick\Cache\RedisCache;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Kuick\Redis\RedisMock;
 use Psr\SimpleCache\CacheException;
@@ -14,9 +15,7 @@ use function PHPUnit\Framework\assertFalse;
 use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 
-/**
- * @covers \Kuick\Cache\RedisCache
- */
+#[CoversClass(RedisCache::class)]
 class RedisCacheTest extends TestCase
 {
     public function testIfCacheCanBeSetAndGet(): void

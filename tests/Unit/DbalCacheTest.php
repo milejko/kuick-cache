@@ -5,6 +5,7 @@ namespace Tests\Unit\Kuick\Cache;
 use Doctrine\DBAL\DriverManager;
 use Kuick\Cache\InvalidArgumentException;
 use Kuick\Cache\DbalCache;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -13,9 +14,7 @@ use function PHPUnit\Framework\assertFalse;
 use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 
-/**
- * @covers \Kuick\Cache\DbalCache
- */
+#[CoversClass(DbalCache::class)]
 class DbalCacheTest extends TestCase
 {
     public function testIfCacheCanBeSetAndGet(): void

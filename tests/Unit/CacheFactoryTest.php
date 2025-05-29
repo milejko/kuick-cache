@@ -10,13 +10,12 @@ use Kuick\Cache\DbalCache;
 use Kuick\Cache\FilesystemCache;
 use Kuick\Cache\InMemoryCache;
 use Kuick\Cache\NullCache;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 use function PHPUnit\Framework\assertInstanceOf;
 
-/**
- * @covers \Kuick\Cache\CacheFactory
- */
+#[CoversClass(CacheFactory::class)]
 class CacheFactoryTest extends TestCase
 {
     public static function setUpBeforeClass(): void

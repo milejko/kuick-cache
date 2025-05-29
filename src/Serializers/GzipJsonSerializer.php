@@ -25,8 +25,8 @@ class GzipJsonSerializer implements SerializerInterface
     }
 
     /**
-     * @SuppressWarnings(PHPMD.ErrorControlOperator)
-     * @SuppressWarnings(PHPMD.EmptyCatchBlock)
+     * @SuppressWarnings(ErrorControlOperator)
+     * @SuppressWarnings(EmptyCatchBlock)
      */
     public function unserialize(string $serializedValue): mixed
     {

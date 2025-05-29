@@ -4,6 +4,7 @@ namespace Tests\Unit\Kuick\Cache;
 
 use DateInterval;
 use Kuick\Cache\InMemoryCache;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\SimpleCache\InvalidArgumentException;
 use stdClass;
@@ -13,10 +14,8 @@ use function PHPUnit\Framework\assertFalse;
 use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 
-/**
- * @covers \Kuick\Cache\InMemoryCache
- * @covers \Kuick\Cache\AbstractCache
- */
+#[CoversClass(InMemoryCache::class)]
+#[CoversClass(InMemoryCache::class)]
 class InMemoryCacheTest extends TestCase
 {
     public function testIfCacheCanBeSetAndGet(): void

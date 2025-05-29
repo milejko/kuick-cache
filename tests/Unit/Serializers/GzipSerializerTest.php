@@ -2,19 +2,14 @@
 
 namespace Tests\Unit\Kuick\Cache\Serializers;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Kuick\Cache\Serializers\GzipSerializer;
 use Kuick\Cache\Serializers\SerializerException;
 use stdClass;
 
-use function PHPUnit\Framework\assertEquals;
-use function PHPUnit\Framework\assertIsString;
-use function PHPUnit\Framework\assertNotEmpty;
-
-/**
- * @covers \Kuick\Cache\Serializers\GzipSerializer
- */
-class GzdeflateSafeSerializerTest extends TestCase
+#[CoversClass(GzipSerializer::class)]
+class GzipSerializerTest extends TestCase
 {
     protected GzipSerializer $serializer;
 
@@ -27,10 +22,9 @@ class GzdeflateSafeSerializerTest extends TestCase
     {
         $data = ['key' => 'value', 'key2' => new stdClass()];
         $serialized = $this->serializer->serialize($data);
-        assertIsString($serialized);
-        assertNotEmpty($serialized);
+        $this->assertNotEmpty($serialized);
         $unserializedData = $this->serializer->unserialize($serialized);
-        assertEquals($data, $unserializedData);
+        $this->assertEquals($data, $unserializedData);
     }
 
     public function testIfBrokenDataThrowsException(): void

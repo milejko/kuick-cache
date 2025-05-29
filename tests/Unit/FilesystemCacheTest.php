@@ -5,6 +5,7 @@ namespace Tests\Unit\Kuick\Cache;
 use Kuick\Cache\CacheException;
 use Kuick\Cache\FilesystemCache;
 use Kuick\Cache\InvalidArgumentException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Symfony\Component\Filesystem\Filesystem;
@@ -15,9 +16,9 @@ use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 
 /**
- * @covers \Kuick\Cache\FilesystemCache
- * @SuppressWarnings(PHPMD.ShortVariable)
+ * @SuppressWarnings(ShortVariable)
  */
+#[CoversClass(FilesystemCache::class)]
 class FilesystemCacheTest extends TestCase
 {
     private static string $cacheDir;
@@ -108,13 +109,6 @@ class FilesystemCacheTest extends TestCase
     }
 
     public function testIfSetToInvalidDirectoryThrowsException(): void
-    {
-        file_put_contents(self::$cacheDir . '/not-a-dir', 'some content');
-        $this->expectException(CacheException::class);
-        new FilesystemCache(self::$cacheDir . '/not-a-dir');
-    }
-
-    public function testIf(): void
     {
         file_put_contents(self::$cacheDir . '/not-a-dir', 'some content');
         $this->expectException(CacheException::class);

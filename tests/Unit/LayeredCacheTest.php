@@ -4,6 +4,7 @@ namespace Tests\Unit\Kuick\Cache;
 
 use Kuick\Cache\InMemoryCache;
 use Kuick\Cache\LayeredCache;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 use function PHPUnit\Framework\assertEquals;
@@ -11,9 +12,7 @@ use function PHPUnit\Framework\assertFalse;
 use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 
-/**
- * @covers \Kuick\Cache\LayeredCache
- */
+#[CoversClass(LayeredCache::class)]
 class LayeredCacheTest extends TestCase
 {
     public function testIfCacheCanBeSetAndGet(): void

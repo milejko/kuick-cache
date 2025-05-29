@@ -37,8 +37,8 @@ class FilesystemCache extends AbstractCache implements CacheInterface
     }
 
     /**
-     * @SuppressWarnings(PHPMD.ErrorControlOperator)
-     * @SuppressWarnings(PHPMD.EmptyCatchBlock)
+     * @SuppressWarnings(ErrorControlOperator)
+     * @SuppressWarnings(EmptyCatchBlock)
      */
     public function get(string $key, mixed $default = null): mixed
     {
@@ -61,8 +61,8 @@ class FilesystemCache extends AbstractCache implements CacheInterface
     }
 
     /**
-     * @SuppressWarnings(PHPMD.ErrorControlOperator)
-     * @SuppressWarnings(PHPMD.EmptyCatchBlock)
+     * @SuppressWarnings(ErrorControlOperator)
+     * @SuppressWarnings(EmptyCatchBlock)
      */
     public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
     {
@@ -86,8 +86,8 @@ class FilesystemCache extends AbstractCache implements CacheInterface
     }
 
     /**
-     * @SuppressWarnings(PHPMD.ErrorControlOperator)
-     * @SuppressWarnings(PHPMD.EmptyCatchBlock)
+     * @SuppressWarnings(ErrorControlOperator)
+     * @SuppressWarnings(EmptyCatchBlock)
      */
     public function delete(string $key): bool
     {
@@ -100,8 +100,8 @@ class FilesystemCache extends AbstractCache implements CacheInterface
     }
 
     /**
-     * @SuppressWarnings(PHPMD.ErrorControlOperator)
-     * @SuppressWarnings(PHPMD.EmptyCatchBlock)
+     * @SuppressWarnings(ErrorControlOperator)
+     * @SuppressWarnings(EmptyCatchBlock)
      */
     public function clear(): bool
     {

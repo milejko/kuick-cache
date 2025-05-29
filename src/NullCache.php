@@ -20,7 +20,7 @@ use Psr\SimpleCache\CacheInterface;
 class NullCache extends AbstractCache implements CacheInterface
 {
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings(UnusedFormalParameter)
      */
     public function get(string $key, mixed $default = null): mixed
     {
@@ -28,7 +28,7 @@ class NullCache extends AbstractCache implements CacheInterface
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings(UnusedFormalParameter)
      */
     public function set(string $key, mixed $value, null|int|DateInterval $ttl = null): bool
     {
@@ -36,7 +36,7 @@ class NullCache extends AbstractCache implements CacheInterface
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings(UnusedFormalParameter)
      */
     public function has(string $key): bool
     {
@@ -44,7 +44,7 @@ class NullCache extends AbstractCache implements CacheInterface
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings(UnusedFormalParameter)
      */
     public function delete(string $key): bool
     {

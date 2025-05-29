@@ -4,6 +4,7 @@ namespace Tests\Kuick\Cache;
 
 use Kuick\Cache\ApcuCache;
 use Kuick\Cache\CacheException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -12,9 +13,7 @@ use function PHPUnit\Framework\assertFalse;
 use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 
-/**
- * @covers \Kuick\Cache\ApcuCache
- */
+#[CoversClass(ApcuCache::class)]
 class ApcuCacheTest extends TestCase
 {
     public function setUp(): void

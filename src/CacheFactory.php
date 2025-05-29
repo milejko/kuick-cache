@@ -21,14 +21,14 @@ use Nyholm\Dsn\DsnParser;
 use Psr\SimpleCache\CacheInterface;
 
 /**
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(CouplingBetweenObjects)
  */
 class CacheFactory
 {
     /**
      * @throws InvalidArgumentException
-     * @SuppressWarnings(PHPMD.StaticAccess)
-     * @suppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(StaticAccess)
+     * @suppressWarnings(CyclomaticComplexity)
      */
     public function __invoke(string $dsnString): CacheInterface
     {
