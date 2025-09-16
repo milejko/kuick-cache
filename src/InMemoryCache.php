@@ -11,7 +11,7 @@
 namespace Kuick\Cache;
 
 use DateInterval;
-use Kuick\Cache\Serializers\Serializer;
+use Kuick\Cache\Serializers\PhpSerializer;
 use Kuick\Cache\Serializers\SerializerInterface;
 use Psr\SimpleCache\CacheInterface;
 
@@ -28,7 +28,7 @@ class InMemoryCache extends AbstractCache implements CacheInterface
     private array $ttls = [];
 
     public function __construct(
-        private SerializerInterface $serializer = new Serializer(),
+        private SerializerInterface $serializer = new PhpSerializer(),
     ) {
     }
 

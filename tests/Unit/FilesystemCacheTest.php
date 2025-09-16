@@ -95,8 +95,8 @@ class FilesystemCacheTest extends TestCase
         $cache->set('first', 'first value');
         $cache->setMultiple(
             [
-            'foo' => 'baz',
-            'baz' => 'bar',
+                'foo' => 'baz',
+                'baz' => 'bar',
             ]
         );
         assertTrue($cache->has('foo'));
@@ -129,5 +129,66 @@ class FilesystemCacheTest extends TestCase
         $fs->remove(self::$cacheDir);
         $this->expectException(CacheException::class);
         $cache->set('foo', 'bar');
+    }
+
+    public function testIfExceptionIsThrownAfterSetWithCustomErrorHandler(): void
+    {
+        set_error_handler(function ($severity, $message, $file, $line) {
+            throw new \ErrorException($message, 0, $severity, $file, $line);
+        });
+        $cache = new FilesystemCache(self::$cacheDir);
+        $fs = new Filesystem();
+        $fs->remove(self::$cacheDir);
+        try {
+            $this->expectException(CacheException::class);
+            $cache->set('foo', 'bar');
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    public function testIfGetWorksWithCustomErrorHandler(): void
+    {
+        set_error_handler(function ($severity, $message, $file, $line) {
+            throw new \ErrorException($message, 0, $severity, $file, $line);
+        });
+        $cache = new FilesystemCache(self::$cacheDir);
+        $fs = new Filesystem();
+        $fs->remove(self::$cacheDir);
+        try {
+            $this->assertEquals('bar', $cache->get('foo', 'bar'));
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    public function testIfDelWorksWithCustomErrorHandler(): void
+    {
+        set_error_handler(function ($severity, $message, $file, $line) {
+            throw new \ErrorException($message, 0, $severity, $file, $line);
+        });
+        $cache = new FilesystemCache(self::$cacheDir);
+        $fs = new Filesystem();
+        $fs->remove(self::$cacheDir);
+        try {
+            $this->assertFalse($cache->delete('foo'));
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    public function testIfClearWorksWithCustomErrorHandler(): void
+    {
+        set_error_handler(function ($severity, $message, $file, $line) {
+            throw new \ErrorException($message, 0, $severity, $file, $line);
+        });
+        $cache = new FilesystemCache(self::$cacheDir);
+        mkdir(self::$cacheDir . '/some-dir', 0777, true);
+        $cache->set('foo', 'bar');
+        try {
+            $this->assertTrue($cache->clear());
+        } finally {
+            restore_error_handler();
+        }
     }
 }

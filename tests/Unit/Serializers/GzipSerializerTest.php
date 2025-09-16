@@ -32,4 +32,17 @@ class GzipSerializerTest extends TestCase
         $this->expectException(SerializerException::class);
         $this->serializer->unserialize('broken-data');
     }
+
+    public function testIfExceptionIsThrownWithCustomErrorHandler(): void
+    {
+        set_error_handler(function ($severity, $message, $file, $line) {
+            throw new \ErrorException($message, 0, $severity, $file, $line);
+        });
+        try {
+            $this->expectException(SerializerException::class);
+            $this->serializer->unserialize('broken-data');
+        } finally {
+            restore_error_handler();
+        }
+    }
 }

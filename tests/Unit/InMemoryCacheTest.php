@@ -15,7 +15,6 @@ use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 
 #[CoversClass(InMemoryCache::class)]
-#[CoversClass(InMemoryCache::class)]
 class InMemoryCacheTest extends TestCase
 {
     public function testIfCacheCanBeSetAndGet(): void

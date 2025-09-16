@@ -11,13 +11,13 @@
 namespace Kuick\Cache;
 
 use DateInterval;
-use Kuick\Cache\Serializers\Serializer;
+use Kuick\Cache\Serializers\PhpSerializer;
 use Kuick\Cache\Serializers\SerializerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 class ApcuCache extends AbstractCache implements CacheInterface
 {
-    public function __construct(private SerializerInterface $serializer = new Serializer())
+    public function __construct(private SerializerInterface $serializer = new PhpSerializer())
     {
         function_exists('apcu_enabled') && apcu_enabled() || throw new CacheException('APCu is not enabled for ' . PHP_SAPI);
     }

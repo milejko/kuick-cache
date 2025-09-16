@@ -13,7 +13,7 @@ namespace Kuick\Cache;
 use DateInterval;
 use FilesystemIterator;
 use GlobIterator;
-use Kuick\Cache\Serializers\Serializer;
+use Kuick\Cache\Serializers\PhpSerializer;
 use Kuick\Cache\Serializers\SerializerInterface;
 use Psr\SimpleCache\CacheInterface;
 use Throwable;
@@ -26,7 +26,7 @@ class FilesystemCache extends AbstractCache implements CacheInterface
 
     public function __construct(
         private string $basePath = self::DEFAULT_BASE_PATH,
-        private SerializerInterface $serializer = new Serializer()
+        private SerializerInterface $serializer = new PhpSerializer()
     ) {
         if (!file_exists($basePath)) {
             mkdir($basePath, 0777, true) || throw new CacheException('Unable to create cache directory: ' . $basePath);

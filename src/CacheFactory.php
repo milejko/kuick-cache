@@ -15,8 +15,8 @@ use Doctrine\DBAL\Tools\DsnParser as DoctrineDsnParser;
 use Kuick\Cache\Serializers\GzipJsonSerializer;
 use Kuick\Cache\Serializers\GzipSerializer;
 use Kuick\Cache\Serializers\JsonSerializer;
-use Kuick\Cache\Serializers\Serializer;
-use Kuick\Redis\RedisClientFactory;
+use Kuick\Cache\Serializers\PhpSerializer;
+use Kuick\Redis\RedisClient;
 use Nyholm\Dsn\DsnParser;
 use Psr\SimpleCache\CacheInterface;
 
@@ -37,7 +37,7 @@ class CacheFactory
             'gzip' => new GzipSerializer(),
             'gzip-json' => new GzipJsonSerializer(),
             'json' => new JsonSerializer(),
-            'default' => new Serializer(),
+            'default' => new PhpSerializer(),
             default => throw new InvalidArgumentException('Serializer invalid: should be one of default, json, gzip or gzip-json'),
         };
         switch ($dsn->getScheme()) {
@@ -57,8 +57,7 @@ class CacheFactory
                 throw new InvalidArgumentException('File cache path not set');
                 return new FilesystemCache($dsn->getPath(), $serializer);
             case 'redis':
-                $redisClient = (new RedisClientFactory())($dsnString);
-                return new RedisCache($redisClient, $serializer);
+                return new RedisCache(new RedisClient($dsnString), $serializer);
         }
         throw new InvalidArgumentException('Cache backend invalid: should be one of in-memory, apcu, file, redis, pdo-mysql, pdo-pgsql, pdo-sqlite');
     }

@@ -5,7 +5,7 @@ namespace Kuick\Cache;
 use DateInterval;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Table;
-use Kuick\Cache\Serializers\Serializer;
+use Kuick\Cache\Serializers\PhpSerializer;
 use Kuick\Cache\Serializers\SerializerInterface;
 use Psr\SimpleCache\CacheInterface;
 use Throwable;
@@ -19,7 +19,7 @@ class DbalCache extends AbstractCache implements CacheInterface
 
     public function __construct(
         private Connection $dbal,
-        private SerializerInterface $serializer = new Serializer(),
+        private SerializerInterface $serializer = new PhpSerializer(),
     ) {
         $schema = $dbal->createSchemaManager();
         if ($schema->tablesExist(self::TABLE_NAME)) {

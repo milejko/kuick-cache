@@ -11,11 +11,10 @@
 namespace Kuick\Cache;
 
 use DateInterval;
-use Kuick\Cache\Serializers\Serializer;
+use Kuick\Cache\Serializers\PhpSerializer;
 use Kuick\Cache\Serializers\SerializerInterface;
-use Kuick\Redis\RedisInterface;
+use Kuick\Redis\RedisClientInterface;
 use Psr\SimpleCache\CacheInterface;
-use Redis;
 use RedisException;
 
 class RedisCache extends AbstractCache implements CacheInterface
@@ -23,8 +22,8 @@ class RedisCache extends AbstractCache implements CacheInterface
     private const INFINITE_TTL = 315360000; //10 years
 
     public function __construct(
-        private Redis|RedisInterface $redis,
-        private SerializerInterface $serializer = new Serializer(),
+        private RedisClientInterface $redisClient,
+        private SerializerInterface $serializer = new PhpSerializer(),
     ) {
     }
 
@@ -36,7 +35,7 @@ class RedisCache extends AbstractCache implements CacheInterface
     {
         $this->validateKey($key);
         try {
-            $rawData = $this->redis->get($this->sanitizeKey($key));
+            $rawData = $this->redisClient->get($this->sanitizeKey($key));
         } catch (RedisException) {
             throw new CacheException('Redis backend failed during get()');
         }
@@ -59,10 +58,10 @@ class RedisCache extends AbstractCache implements CacheInterface
         $sanitizedKey = $this->sanitizeKey($key);
         $ttlSeconds = $this->ttlToInt($ttl);
         try {
-            $this->redis->set($sanitizedKey, $this->serializer->serialize($value), $ttlSeconds ? $ttlSeconds : self::INFINITE_TTL);
+            $this->redisClient->set($sanitizedKey, $this->serializer->serialize($value), $ttlSeconds ?: self::INFINITE_TTL);
             //persist item
             if (!$ttlSeconds) {
-                $this->redis->persist($sanitizedKey);
+                $this->redisClient->persist($sanitizedKey);
             }
         } catch (RedisException) {
             throw new CacheException('Redis backend failed during set()');
@@ -78,7 +77,7 @@ class RedisCache extends AbstractCache implements CacheInterface
     {
         $this->validateKey($key);
         try {
-            if (false === $this->redis->exists($this->sanitizeKey($key))) {
+            if (false === $this->redisClient->exists($this->sanitizeKey($key))) {
                 return false;
             }
         } catch (RedisException) {
@@ -94,7 +93,7 @@ class RedisCache extends AbstractCache implements CacheInterface
     {
         $this->validateKey($key);
         try {
-            $this->redis->del($this->sanitizeKey($key));
+            $this->redisClient->del($this->sanitizeKey($key));
         } catch (RedisException) {
             throw new CacheException('Redis backend failed during delete()');
         }
@@ -107,7 +106,7 @@ class RedisCache extends AbstractCache implements CacheInterface
     public function clear(): bool
     {
         try {
-            $this->redis->flushDB();
+            $this->redisClient->flushDB();
         } catch (RedisException) {
             throw new CacheException('Redis backend failed during clear()');
         }

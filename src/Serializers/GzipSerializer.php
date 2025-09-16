@@ -21,7 +21,7 @@ class GzipSerializer implements SerializerInterface
 
     public function serialize(mixed $value): string
     {
-        return (string) gzdeflate((new Serializer())->serialize($value), self::COMPRESSION_LEVEL);
+        return (string) gzdeflate((new PhpSerializer())->serialize($value), self::COMPRESSION_LEVEL);
     }
 
     /**
@@ -38,6 +38,6 @@ class GzipSerializer implements SerializerInterface
         if (false === $decompressed) {
             throw new SerializerException('Unable to unserialize value');
         }
-        return (new Serializer())->unserialize($decompressed);
+        return (new PhpSerializer())->unserialize($decompressed);
     }
 }

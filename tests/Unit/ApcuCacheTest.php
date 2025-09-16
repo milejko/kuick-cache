@@ -8,11 +8,6 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
-use function PHPUnit\Framework\assertEquals;
-use function PHPUnit\Framework\assertFalse;
-use function PHPUnit\Framework\assertNull;
-use function PHPUnit\Framework\assertTrue;
-
 #[CoversClass(ApcuCache::class)]
 class ApcuCacheTest extends TestCase
 {
@@ -24,40 +19,40 @@ class ApcuCacheTest extends TestCase
     public function testIfCacheCanBeSetAndGet(): void
     {
         $cache = new ApcuCache();
-        assertNull($cache->get('inexistent-key'));
-        assertFalse($cache->has('inexistent-key'));
-        assertTrue($cache->set('/my/key', 'test-value'));
-        assertTrue($cache->has('/my/key'));
-        assertEquals('test-value', $cache->get('/my/key'));
+        $this->assertNull($cache->get('inexistent-key'));
+        $this->assertFalse($cache->has('inexistent-key'));
+        $this->assertTrue($cache->set('/my/key', 'test-value'));
+        $this->assertTrue($cache->has('/my/key'));
+        $this->assertEquals('test-value', $cache->get('/my/key'));
         $cache->set('foo', new stdClass());
-        assertEquals(new stdClass(), $cache->get('foo'));
+        $this->assertEquals(new stdClass(), $cache->get('foo'));
     }
 
     public function testIfCacheCanBeOverwritten(): void
     {
         $cache = new ApcuCache();
-        assertTrue($cache->set('foo', 'bar'));
-        assertEquals('bar', $cache->get('foo'));
-        assertTrue($cache->set('foo', 'baz'));
-        assertEquals('baz', $cache->get('foo'));
+        $this->assertTrue($cache->set('foo', 'bar'));
+        $this->assertEquals('bar', $cache->get('foo'));
+        $this->assertTrue($cache->set('foo', 'baz'));
+        $this->assertEquals('baz', $cache->get('foo'));
     }
 
     public function testIfCacheCanBeDeleted(): void
     {
         $cache = new ApcuCache();
-        assertTrue($cache->set('foo', 'bar'));
-        assertEquals('bar', $cache->get('foo'));
-        assertTrue($cache->delete('foo'));
-        assertNull($cache->get('foo'));
+        $this->assertTrue($cache->set('foo', 'bar'));
+        $this->assertEquals('bar', $cache->get('foo'));
+        $this->assertTrue($cache->delete('foo'));
+        $this->assertNull($cache->get('foo'));
     }
 
     public function testIfExpiredCacheReturnsNull(): void
     {
         $cache = new ApcuCache();
         $cache->set('foo', 'bar', 1);
-        assertEquals('bar', $cache->get('foo'));
+        $this->assertEquals('bar', $cache->get('foo'));
         sleep(2);
-        assertNull($cache->get('foo'));
+        $this->assertNull($cache->get('foo'));
     }
 
     public function testMultipleSetsAndGetsDeletes(): void
@@ -69,9 +64,9 @@ class ApcuCacheTest extends TestCase
             'third' => 'third value',
         ];
         $cache->setMultiple($sourceArray);
-        assertEquals($sourceArray, $cache->getMultiple(['first', 'second', 'third']));
-        assertTrue($cache->deleteMultiple(['second', 'third']));
-        assertEquals(['first' => 'first value'], $cache->getMultiple(['first']));
+        $this->assertEquals($sourceArray, $cache->getMultiple(['first', 'second', 'third']));
+        $this->assertTrue($cache->deleteMultiple(['second', 'third']));
+        $this->assertEquals(['first' => 'first value'], $cache->getMultiple(['first']));
     }
 
     public function testClear(): void
@@ -84,13 +79,13 @@ class ApcuCacheTest extends TestCase
             'baz' => 'bar',
             ]
         );
-        assertTrue($cache->has('foo'));
-        assertTrue($cache->has('first'));
-        assertTrue($cache->has('baz'));
-        assertTrue($cache->clear());
-        assertFalse($cache->has('foo'));
-        assertFalse($cache->has('first'));
-        assertFalse($cache->has('baz'));
+        $this->assertTrue($cache->has('foo'));
+        $this->assertTrue($cache->has('first'));
+        $this->assertTrue($cache->has('baz'));
+        $this->assertTrue($cache->clear());
+        $this->assertFalse($cache->has('foo'));
+        $this->assertFalse($cache->has('first'));
+        $this->assertFalse($cache->has('baz'));
     }
 
     public function testIfMessedUpCacheReturnsNull(): void

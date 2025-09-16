@@ -71,4 +71,16 @@ class CacheFactoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         (new CacheFactory())('inexistent://127.0.0.1');
     }
+
+    public function testIfAllSerializersCanBeSet(): void
+    {
+        $gzipSerializerCache = (new CacheFactory())('in-memory://?serializer=gzip');
+        assertInstanceOf(InMemoryCache::class, $gzipSerializerCache);
+        $gzipJsonSerializerCache = (new CacheFactory())('in-memory://?serializer=gzip-json');
+        assertInstanceOf(InMemoryCache::class, $gzipJsonSerializerCache);
+        $jsonSerializerCache = (new CacheFactory())('in-memory://?serializer=json');
+        assertInstanceOf(InMemoryCache::class, $jsonSerializerCache);
+        $this->expectException(InvalidArgumentException::class);
+        (new CacheFactory())('in-memory://?serializer=wrong-serializer');
+    }
 }

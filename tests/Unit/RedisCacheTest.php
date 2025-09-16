@@ -3,11 +3,11 @@
 namespace Tests\Unit\Kuick\Cache;
 
 use Kuick\Cache\RedisCache;
+use Kuick\Redis\RedisClient;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Kuick\Redis\RedisMock;
+use Kuick\Redis\RedisClientMock;
 use Psr\SimpleCache\CacheException;
-use Redis;
 use stdClass;
 
 use function PHPUnit\Framework\assertEquals;
@@ -20,7 +20,7 @@ class RedisCacheTest extends TestCase
 {
     public function testIfCacheCanBeSetAndGet(): void
     {
-        $cache = new RedisCache(new RedisMock());
+        $cache = new RedisCache(new RedisClientMock());
         assertNull($cache->get('inexistent-key'));
         assertFalse($cache->has('inexistent-key'));
         assertTrue($cache->set('/my/key', 'test-value'));
@@ -32,7 +32,7 @@ class RedisCacheTest extends TestCase
 
     public function testIfCacheCanBeOverwritten(): void
     {
-        $cache = new RedisCache(new RedisMock());
+        $cache = new RedisCache(new RedisClientMock());
         assertTrue($cache->set('foo', 'bar'));
         assertEquals('bar', $cache->get('foo'));
         assertTrue($cache->set('foo', 'baz'));
@@ -41,7 +41,7 @@ class RedisCacheTest extends TestCase
 
     public function testIfCacheCanBeDeleted(): void
     {
-        $cache = new RedisCache(new RedisMock());
+        $cache = new RedisCache(new RedisClientMock());
         assertTrue($cache->set('foo', 'bar'));
         assertEquals('bar', $cache->get('foo'));
         assertTrue($cache->delete('foo'));
@@ -50,7 +50,7 @@ class RedisCacheTest extends TestCase
 
     public function testIfExpiredCacheReturnsNull(): void
     {
-        $cache = new RedisCache(new RedisMock());
+        $cache = new RedisCache(new RedisClientMock());
         $cache->set('foo', 'bar', 1);
         assertEquals('bar', $cache->get('foo'));
         sleep(1);
@@ -59,7 +59,7 @@ class RedisCacheTest extends TestCase
 
     public function testMultipleSetsAndGetsDeletes(): void
     {
-        $cache = new RedisCache(new RedisMock());
+        $cache = new RedisCache(new RedisClientMock());
         $sourceArray = [
             'first' => 'first value',
             'second' => 'second value',
@@ -73,12 +73,12 @@ class RedisCacheTest extends TestCase
 
     public function testClear(): void
     {
-        $cache = new RedisCache(new RedisMock());
+        $cache = new RedisCache(new RedisClientMock());
         $cache->set('first', 'first value');
         $cache->setMultiple(
             [
-            'foo' => 'baz',
-            'baz' => 'bar',
+                'foo' => 'baz',
+                'baz' => 'bar',
             ]
         );
         assertTrue($cache->has('foo'));
@@ -91,14 +91,14 @@ class RedisCacheTest extends TestCase
     }
     public function testIfMessedUpCacheReturnsNull(): void
     {
-        $cache = new RedisCache($redisMock = new RedisMock());
+        $cache = new RedisCache($redisMock = new RedisClientMock());
         $redisMock->set('foo', null);
         assertNull($cache->get('foo'));
     }
 
     public function testRealRedisGetThrowsException(): void
     {
-        $cache = new RedisCache(new Redis());
+        $cache = new RedisCache(new RedisClient('redis://127.0.0.1'));
         //redis unavailable
         $this->expectException(CacheException::class);
         $cache->get('inexistent-key');
@@ -106,7 +106,7 @@ class RedisCacheTest extends TestCase
 
     public function testRealRedisSetThrowsException(): void
     {
-        $cache = new RedisCache(new Redis());
+        $cache = new RedisCache(new RedisClient('redis://127.0.0.1'));
         //redis unavailable
         $this->expectException(CacheException::class);
         $cache->set('foo', 'bar');
@@ -114,7 +114,7 @@ class RedisCacheTest extends TestCase
 
     public function testRealRedisHasThrowsException(): void
     {
-        $cache = new RedisCache(new Redis());
+        $cache = new RedisCache(new RedisClient('redis://127.0.0.1'));
         //redis unavailable
         $this->expectException(CacheException::class);
         $cache->has('foo');
@@ -122,7 +122,7 @@ class RedisCacheTest extends TestCase
 
     public function testRealRedisDeleteThrowsException(): void
     {
-        $cache = new RedisCache(new Redis());
+        $cache = new RedisCache(new RedisClient('redis://127.0.0.1'));
         //redis unavailable
         $this->expectException(CacheException::class);
         $cache->delete('foo');
@@ -130,7 +130,7 @@ class RedisCacheTest extends TestCase
 
     public function testRealRedisClearThrowsException(): void
     {
-        $cache = new RedisCache(new Redis());
+        $cache = new RedisCache(new RedisClient('redis://127.0.0.1'));
         //redis unavailable
         $this->expectException(CacheException::class);
         $cache->clear();
@@ -138,7 +138,7 @@ class RedisCacheTest extends TestCase
 
     public function testBrokenCacheValueValidation(): void
     {
-        $redis = new RedisMock();
+        $redis = new RedisClientMock();
         $redis->set('foo', new stdClass());
         $cache = new RedisCache($redis);
         $this->expectException(CacheException::class);
