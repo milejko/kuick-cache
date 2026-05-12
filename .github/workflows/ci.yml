@@ -20,7 +20,8 @@ jobs:
       uses: actions/checkout@v6
     - name: Run tests
       run: make test
-      env: PHP_VERSION=${{ matrix.php-version }}
+      with:
+        env: PHP_VERSION=${{ matrix.php-version }}
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v6
       with:
